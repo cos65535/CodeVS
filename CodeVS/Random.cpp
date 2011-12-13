@@ -51,13 +51,17 @@ int w, h;
 char str[1000];
 bool visit[60][60];
 int dist[60][60];
-const int dx[4] = { 1, 0, -1, 0 };
-const int dy[4] = { 0, 1, 0, -1 };
+const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };
+const int dy[8] = { 0, 1, 0, -1, 1, -1, -1, 1 };
 
 struct Point {
-  int x, y, cost;
+  int x, y;
+  double cost;
   Point() {;}
-  Point(int x, int y, int cost) : x(x), y(y), cost(cost) {;}
+  Point(int x, int y, double cost) : x(x), y(y), cost(cost) {;}
+  bool operator<(const Point &rhs) const {
+    return cost > rhs.cost;
+  }
 };
 
 void CalcDist() {
@@ -226,52 +230,65 @@ vector<Tower> RappidPut(int stage, vector<Tower> &tower, int stageFirstMoney, in
   REP(sy, h) {
     REP(sx, w) {
       if (field[sy][sx] != 's') { continue; }
-      queue<Point> que;
+      priority_queue<Point> que;
       que.push(Point(sx, sy, 0));
       MEMSET(visit, false);
       visit[sy][sx] = true;
-      int cnt = 0;
+      double cnt = 0;
       while (!que.empty()) {
-        Point p = que.front();
+        Point p = que.top();
         que.pop();
         if (p.cost >= 5) { break; }
         if (field[p.y][p.x] == 'P') {
           cnt++;
         }
-        REP(dir, 4) {
+        REP(dir, 8) {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
           if (visit[ny][nx]) { continue; }
           visit[ny][nx] = true;
-          que.push(Point(nx, ny, p.cost + 1));
+          double ncost = p.cost + 1;
+          if (dir > 4) { ncost = p.cost + 1.41421356; }
+          que.push(Point(nx, ny, ncost));
         }
       }
 
-      if (cnt >= 2) { continue; }
-      que = queue<Point>();
+      //if (cnt >= 2) { continue; }
+      que = priority_queue<Point>();
       que.push(Point(sx, sy, 0));
       MEMSET(visit, false);
       visit[sy][sx] = true;
       cnt = 0;
       while (!que.empty()) {
-        Point p = que.front();
+        Point p = que.top();
         que.pop();
         if (OK(p.x, p.y)) {
           int level = 4;
-          if (cnt == 1) { level = 0; }
-          ret.push_back(Tower(p.x, p.y, level, 0));
+          //if (cnt == 1) { level = 0; }
+          int type = 0;
+          if ((int)cnt % 4 == 2) { type = 2; }
+          ret.push_back(Tower(p.x, p.y, level, type));
           cnt++;
           field[p.y][p.x] = 'P';
-          if (cnt > 0) { break; }
+          if (stage < 10 && cnt > 0) { break; }
+          if (stage >= 10 && stage < 40 && cnt > 1) { break; }
+          if (stage == 40 && cnt > 20) { break; }
+          if (stage >= 41 && stage <= 46&& cnt > 60) { break; }
+          if (stage == 47 && cnt > 50) { break; }
+          if (stage == 48 && cnt > 60) { break; }
+          if (stage >= 48 && cnt > 20) { break; }
+//          if (cnt > 0) { break; }
         }
-        REP(dir, 4) {
+        REP(dir, 8) {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
           if (visit[ny][nx]) { continue; }
           visit[ny][nx] = true;
-          que.push(Point(nx, ny, p.cost + 1));
+          double ncost = p.cost + 1;
+          if (dir > 4) { ncost = p.cost + 1.41421356; }
+          que.push(Point(nx, ny, ncost));
         }
       }
     }
@@ -320,6 +337,20 @@ int main() {
       vector<Tower> output;
       output = RappidPut(stage, tower, stageFirstMoney, money, j);
 
+      if (stage == -1 && j == 20) {
+        printf("2\n");
+        puts("3 3 15000 2");
+        puts("3 3 4 1");
+      //  int total = 10000000;
+      //  printf("%d\n", total * 2);
+      //  REP(i, total) {
+      //    puts("3 3 4 2");
+      //    puts("3 3 4 1"); 
+      //    fflush(stdout);
+      //  }
+        fflush(stdout);
+        continue;
+      }
       // Print
       printf("%d\n", (int)output.size());
       FORIT(it, output) {
