@@ -1,4 +1,6 @@
-#pragma once;
+#pragma once
+#ifndef __TEST__
+#define __TEST__
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -31,3 +33,15 @@ static const double PI = acos(-1.0);
 template<class T>
 T square(T x) { return x * x; }
 
+//cppÉtÉ@ÉCÉãçÏÇÈÇÃÇﬂÇÒÇ«Ç¢
+template<class T>
+void PrintMatrix(const T mat[51][51], int w, int h) {
+  REP(y, h) {
+    REP(x, w) {
+      fprintf(stderr, "%d ", mat[y][x]);
+    }
+    fprintf(stderr, "\n");
+  }
+}
+
+#endif

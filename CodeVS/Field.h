@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include "Base.h"
 #include "Structure.h"
@@ -26,24 +26,32 @@ struct Field {
 		gs.clear();
 		REP(y, h) {
 			REP(x, w) {
-				if (field[y][x] == 's') {
+				if (field[y][x] == (int)'s') {
 					ss.push_back(Point(x, y));
 				}
-				if (field[y][x] == 'g') {
+				if (field[y][x] == (int)'g') {
 					gs.push_back(Point(x, y));
 				}
 			}
 		}
 	}
-	bool PutTower(const vector<TowerInfo> &tower) {
+	int PutTower(const vector<TowerInfo> &tower) {
+    int ret = 0;
 		FORIT(it, tower) {
 			assert(0 <= it->type && it->type <= 2);
-			if (field[it->y][it->x] != '.') { return false; }
-			field[it->y][it->x] = it->type * 1000 + it->level * 100;
+			if (field[it->y][it->x] == 's' || field[it->y][it->x] == 'g' || field[it->y][it->x] == '1') { return -1; }
+      ret += it->Money();
+      int ptype = field[it->y][it->x] / 1000 - 1;
+      int plevel = field[it->y][it->x] % 1000 / 100 - 1;
+      if (ptype == it->type) {
+        ret -= TowerInfo(-1, -1, plevel, ptype).Money();
+      }
+			field[it->y][it->x] = (it->type + 1) * 1000 + (it->level + 1) * 100;
 		}
-		CalcParent();
+		CalcMove();
+    return ret;
 	}
-	void CalcParent() {
+	void CalcMove() {
 		struct LocalPoint {
 			int x;
 			int y;
@@ -63,6 +71,7 @@ struct Field {
 		bool visit[51][51];
 		MEMSET(visit, false);
 		MEMSET(dist, 0x0f);
+    MEMSET(move, 0x0f);
 		while (!que.empty()) {
 			LocalPoint p = que.top();
 			que.pop();
@@ -74,12 +83,12 @@ struct Field {
 			REP(dir, 8) {
 				int nx = p.x + dx[dir];
 				int ny = p.y + dy[dir];
-				int ndist = p.dist + 1 + dir % 2;
-				if (field[ny][nx] != '1' && field[ny][nx] == 's') { continue; }
+				int ndist = p.dist + 2 + dir % 2;
+				if (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') { continue; }
 				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
 				if (dir % 2 == 1) {
-					if (field[ny][p.x] != '1' && field[ny][p.x] == 's') { continue; }
-					if (field[p.y][nx] != '1' && field[p.y][nx] == 's') { continue; }
+					if (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') { continue; }
+					if (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') { continue; }
 				}
 				dist[ny][nx] = ndist;
 				que.push(LocalPoint(nx, ny, ndist, dir));

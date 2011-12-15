@@ -1,4 +1,4 @@
-#pragma once;
+#pragma once
 
 #include "Base.h"
 
@@ -60,6 +60,8 @@ struct MapInitalInfo {
 			assert(v == 5);
 			enemy.push_back(EnemyInfo(x, y, t, l, s));
 		}
+		v = fscanf(fp, " END");
+    assert(v == 0);
 		return true;
 	}
 };
@@ -83,7 +85,7 @@ struct StageData {
 		assert(v == 2);
 		REP(y, h) {
 			REP(x, w) {
-				int c;
+				char c;
 				v = fscanf(fp, " %c ", &c);
 				assert(v == 1);
 				field[y][x] = c;
@@ -93,6 +95,7 @@ struct StageData {
 		assert(v == 1);
 		v = fscanf(fp, " END");
 		assert(v == 0);
+    return ret;
 	}
 	bool LoadMap(FILE *fp) {
 		assert((int)infos.size() < levelCnt);

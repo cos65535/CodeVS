@@ -1,9 +1,10 @@
 #include "Base.h"
+#include "Field.h"
 #include "Simulator.h"
 #include "Structure.h"
 
 int stageCnt;
-int field[100][100];
+int field[51][51];
 int l;
 int w, h;
 char str[1000];
@@ -157,7 +158,7 @@ vector<TowerInfo> RappidPut(int stage, vector<TowerInfo> &tower, int stageFirstM
           int level = 4;
           //if (cnt == 1) { level = 0; }
           int type = 0;
-          if ((int)cnt % 4 == 2) { type = 2; }
+//          if ((int)cnt % 4 == 2) { type = 2; }
           ret.push_back(TowerInfo(p.x, p.y, level, type));
           cnt++;
           field[p.y][p.x] = 'P';
@@ -166,8 +167,8 @@ vector<TowerInfo> RappidPut(int stage, vector<TowerInfo> &tower, int stageFirstM
           if (stage == 40 && cnt > 20) { break; }
           if (stage >= 41 && stage <= 46&& cnt > 60) { break; }
           if (stage == 47 && cnt > 50) { break; }
-          if (stage == 48 && cnt > 60) { break; }
-          if (stage >= 48 && cnt > 20) { break; }
+          if (stage == 48 && cnt > 35) { break; }
+          if (stage >= 49 && cnt > 70) { break; }
 //          if (cnt > 0) { break; }
         }
         REP(dir, 8) {
@@ -189,64 +190,40 @@ vector<TowerInfo> RappidPut(int stage, vector<TowerInfo> &tower, int stageFirstM
 
 int main() {
   srand(123456789);
+//  Simulator simulator("input.txt");
   scanf("%d", &stageCnt);
+  int plife = 10;
+  int pmoney = 100;
+  pair<int, int> ans(0, 0);
   REP(stage, stageCnt) {
-    scanf("%d %d", &w, &h);
-    REP(y, h) {
-      REP(x, w) {
-        char c;
-        scanf(" %c ", &c);
-        field[y][x] = c;
-      }
-    }
+    StageData stageData;
+    stageData.LoadHeader(stdin);
+    w = stageData.w;
+    h = stageData.h;
+    memcpy(field, stageData.field, sizeof(stageData.field));
     CalcDist();
-    scanf("%d", &l);
-    scanf("%s", str);   //END
-    assert(str[0] == 'E' && str[1] == 'N' && str[2] == 'D');
-    int stageFirstMoney = 0;
-    REP(j, l) {
-      int life, money, T, E;
-      scanf("%d %d %d %d", &life, &money, &T, &E);
-      if (stageFirstMoney == 0) { stageFirstMoney = money; }
-      vector<TowerInfo> tower;
-      vector<EnemyInfo> enemy;
-      REP(k, T) {
-        int x, y, a, c;
-        scanf("%d %d %d %d", &x, &y, &a, &c);
-        tower.push_back(TowerInfo(x, y, a, c));
-        field[y][x] = 'P';
-      }
-      REP(k, E) {
-        int x, y, t, l, s;
-        scanf("%d %d %d %d %d", &x, &y, &t, &l, &s);
-        enemy.push_back(EnemyInfo(x, y, t, l, s));
-      }
-      scanf("%s", str);   //END
-      assert(str[0] == 'E' && str[1] == 'N' && str[2] == 'D');
+    REP(j, stageData.levelCnt) {
+      stageData.LoadMap(stdin);
+//      fprintf(stderr, "Stage:%d-%d\n", stage + 1, j + 1);
+//      fprintf(stderr, "Ans:%d %d\n", plife - stageData.infos.back().life, stageData.infos.back().money - pmoney);
+//      if (stage != 40 && j == 0) {
+//        assert(plife - ans.first == stageData.infos.back().life);
+//        assert(pmoney + ans.second == stageData.infos.back().money);
+//      }
+      plife = stageData.infos.back().life;
+      pmoney = stageData.infos.back().money;
 
       vector<TowerInfo> output;
-      output = RappidPut(stage, tower, stageFirstMoney, money, j);
+      output = RappidPut(stage, stageData.infos.back().tower, 0, stageData.infos.back().money, j);
 
-      if (stage == -1 && j == 20) {
-        printf("2\n");
-        puts("3 3 15000 2");
-        puts("3 3 4 1");
-      //  int total = 10000000;
-      //  printf("%d\n", total * 2);
-      //  REP(i, total) {
-      //    puts("3 3 4 2");
-      //    puts("3 3 4 1"); 
-      //    fflush(stdout);
-      //  }
-        fflush(stdout);
-        continue;
-      }
       // Print
       printf("%d\n", (int)output.size());
       FORIT(it, output) {
         printf("%d %d %d %d\n", it->x, it->y, it->level, it->type);
       }
       fflush(stdout);
+//      ans = simulator.OneMapSimulation(stage, j, output, stageData.infos[j].tower);
+//      fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }
 }

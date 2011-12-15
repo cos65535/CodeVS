@@ -60,7 +60,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Random.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Simulator.h" />
   </ItemGroup>
   <ItemGroup>
