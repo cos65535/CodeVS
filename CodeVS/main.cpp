@@ -1,48 +1,6 @@
-#include <stdio.h>
-#include <string.h>
-#include <algorithm>
-#include <iostream>
-#include <math.h>
-#include <assert.h>
-#include <vector>
-#include <queue>
-#include <string>
-#include <map>
-#include <set>
-
-using namespace std;
-typedef long long ll;
-typedef unsigned int uint;
-typedef unsigned long long ull;
-static const double EPS = 1e-9;
-static const double PI = acos(-1.0);
-
-#define REP(i, n) for (int i = 0; i < (int)(n); i++)
-#define FOR(i, s, n) for (int i = (s); i < (int)(n); i++)
-#define FOREQ(i, s, n) for (int i = (s); i <= (int)(n); i++)
-#define FORIT(it, c) for (auto it= (c).begin(); it != (c).end(); it++)
-#define MEMSET(v, h) memset((v), h, sizeof(v))
-
-struct Tower {
-  int x;
-  int y;
-  int level;
-  int type;
-  Tower() {;}
-  Tower(int x, int y, int level, int type) :
-    x(x), y(y), level(level), type(type) {;}
-};
-
-struct Enemy {
-  int x;
-  int y;
-  int t;
-  int life;
-  int speed;
-  Enemy() {;}
-  Enemy(int x, int y, int t, int life, int speed) :
-    x(x), y(y), t(t), life(life), speed(speed) {;}
-};
+#include "Base.h"
+#include "Simulator.h"
+#include "Structure.h"
 
 int stageCnt;
 int field[100][100];
@@ -79,7 +37,7 @@ void CalcDist() {
   while (!que.empty()) {
     Point p = que.front();
     que.pop();
-    dist[p.y][p.x] = p.cost;
+    dist[p.y][p.x] = (int)p.cost;
     REP(dir, 4) {
       int nx = p.x + dx[dir];
       int ny = p.y + dy[dir];
@@ -138,91 +96,23 @@ ng:;
   return false;
 }
 
-vector<Tower> RandomPut(int stage, vector<Tower> &tower, int stageFirstMoney, int money, int turn) {
-  vector<Tower> ret;
-  if (tower.empty()) {
-    if (stage == 0) {
-      //ret.push_back(Tower(2, 3, 3, 0));
-      //ret.push_back(Tower(2, 2, 0, 0));
-      //ret.push_back(Tower(2, 3, 0, 0));
-      //ret.push_back(Tower(2, 4, 0, 0));
-      //ret.push_back(Tower(2, 5, 0, 0));
-      //ret.push_back(Tower(4, 2, 0, 1));
-      //ret.push_back(Tower(4, 3, 0, 1));
-      //ret.push_back(Tower(4, 4, 0, 2));
-      //ret.push_back(Tower(5, 2, 0, 0));
-    } else {
-      int cnt = 0;
-      int use = 0;
-      //PrintField();
-      int IterCnt = 80;
-      if (stage >= 15) { IterCnt = 400; }
-      if (stage >= 25) { IterCnt = 600; }
-      REP(iter, IterCnt) {
-        int x = rand() % (w - 2) + 1;
-        int y = rand() % (h - 2) + 1;
-        if (OK(x, y)) {
-          int type = rand() % 10;
-          if (type < 2) { type = 0; }
-          else if (type < 6) { type = 1; }
-          else { type = 2; }
-          if (iter > 150) { type = 0; }
-          //type = 0;
-          if (use + 10 + 5 * type >= stageFirstMoney / 2) { break; }
-          field[y][x] = 'P';
-          int level = 0;
-          if (type != 2 && money - use >= 1000 && iter <= 200) {
-            level = 2;
-            //if (dist[y][x] <= 2) { level = 4; }
-            if (type == 1) { level = 3; }
-            //if (dist[y][x] <= 2) {
-            //  level = 3;
-            //} else if (dist[y][x] <= 4) {
-            //  level = 2;
-            //} else if (dist[y][x] <= 6) {
-            //  level = 1;
-            //}
-          }
-          use += CalcCost(type, -1, level);
-          ret.push_back(Tower(x, y, level, type));
-        } else {
-          continue;
-        }
-      }
-    }
-  } else if (stageFirstMoney < money) {
-    set<int> levelup;
-    REP(iter, 5) {
-      int m = tower.size();
-      int r = rand() % m;
-      if (levelup.count(r) || tower[r].level == 4) { continue; }
-      if (dist[tower[r].y][tower[r].x] >= rand() % 10) { continue; }
-      levelup.insert(r);
-      int need = CalcCost(tower[r].type, tower[r].level, tower[r].level + 1);
-      money -= need;
-      if (stageFirstMoney * 2 >= money) { break; }
-      ret.push_back(Tower(tower[r].x, tower[r].y, tower[r].level + 1, tower[r].type));
-    }
-  }
-  return ret;
-}
 
-vector<Tower> RappidPut(int stage, vector<Tower> &tower, int stageFirstMoney, int money, int turn) {
-  vector<Tower> ret;
+vector<TowerInfo> RappidPut(int stage, vector<TowerInfo> &tower, int stageFirstMoney, int money, int turn) {
+  vector<TowerInfo> ret;
   if (stage == 0) {
     if (turn == 0) {
-      ret.push_back(Tower(2, 3, 3, 0));
+      ret.push_back(TowerInfo(2, 3, 3, 0));
     } else if (turn == 5) {
-      ret.push_back(Tower(2, 3, 4, 0));
+      ret.push_back(TowerInfo(2, 3, 4, 0));
     } else if (turn == 10) {
-      ret.push_back(Tower(2, 2, 0, 0));
-      ret.push_back(Tower(2, 4, 0, 0));
+      ret.push_back(TowerInfo(2, 2, 0, 0));
+      ret.push_back(TowerInfo(2, 4, 0, 0));
     }
     return ret;
   }
   if (stage == 1) {
     if (turn == 1) {
-      ret.push_back(Tower(3, 1, 0, 0));
+      ret.push_back(TowerInfo(3, 1, 0, 0));
     }
   }
   if (!tower.empty()) { return ret; }
@@ -268,7 +158,7 @@ vector<Tower> RappidPut(int stage, vector<Tower> &tower, int stageFirstMoney, in
           //if (cnt == 1) { level = 0; }
           int type = 0;
           if ((int)cnt % 4 == 2) { type = 2; }
-          ret.push_back(Tower(p.x, p.y, level, type));
+          ret.push_back(TowerInfo(p.x, p.y, level, type));
           cnt++;
           field[p.y][p.x] = 'P';
           if (stage < 10 && cnt > 0) { break; }
@@ -318,23 +208,23 @@ int main() {
       int life, money, T, E;
       scanf("%d %d %d %d", &life, &money, &T, &E);
       if (stageFirstMoney == 0) { stageFirstMoney = money; }
-      vector<Tower> tower;
-      vector<Enemy> enemy;
+      vector<TowerInfo> tower;
+      vector<EnemyInfo> enemy;
       REP(k, T) {
         int x, y, a, c;
         scanf("%d %d %d %d", &x, &y, &a, &c);
-        tower.push_back(Tower(x, y, a, c));
+        tower.push_back(TowerInfo(x, y, a, c));
         field[y][x] = 'P';
       }
       REP(k, E) {
         int x, y, t, l, s;
         scanf("%d %d %d %d %d", &x, &y, &t, &l, &s);
-        enemy.push_back(Enemy(x, y, t, l, s));
+        enemy.push_back(EnemyInfo(x, y, t, l, s));
       }
       scanf("%s", str);   //END
       assert(str[0] == 'E' && str[1] == 'N' && str[2] == 'D');
 
-      vector<Tower> output;
+      vector<TowerInfo> output;
       output = RappidPut(stage, tower, stageFirstMoney, money, j);
 
       if (stage == -1 && j == 20) {
