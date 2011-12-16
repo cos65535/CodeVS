@@ -9,7 +9,6 @@ int l;
 int w, h;
 char str[1000];
 bool visit[60][60];
-int dist[60][60];
 const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };
 const int dy[8] = { 0, 1, 0, -1, 1, -1, -1, 1 };
 
@@ -22,37 +21,6 @@ struct Point {
     return cost > rhs.cost;
   }
 };
-
-void CalcDist() {
-  queue<Point> que;
-  MEMSET(dist, 0x0f);
-  MEMSET(visit, false);
-  REP(y, h) {
-    REP(x, w) {
-      if (field[y][x] == 's') {
-        que.push(Point(y, x, 0));
-        visit[y][x] = true;
-      }
-    }
-  }
-  while (!que.empty()) {
-    Point p = que.front();
-    que.pop();
-    dist[p.y][p.x] = (int)p.cost;
-    REP(dir, 4) {
-      int nx = p.x + dx[dir];
-      int ny = p.y + dy[dir];
-      if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
-      if (visit[ny][nx]) { continue; }
-      visit[ny][nx] = true;
-      que.push(Point(nx, ny, p.cost + 1));
-    }
-  }
-}
-
-inline int CalcCost(int type, int plevel, int level) {
-  return (10 + 5 * type) * ((level + 1) * (level + 2) / 2 - (plevel + 1) * (plevel + 2) / 2);
-}
 
 
 void PrintField() {
@@ -190,7 +158,7 @@ vector<TowerInfo> RappidPut(int stage, vector<TowerInfo> &tower, int stageFirstM
 
 int main() {
   srand(123456789);
-//  Simulator simulator("input.txt");
+  Simulator simulator("input.txt");
   scanf("%d", &stageCnt);
   int plife = 10;
   int pmoney = 100;
@@ -201,15 +169,14 @@ int main() {
     w = stageData.w;
     h = stageData.h;
     memcpy(field, stageData.field, sizeof(stageData.field));
-    CalcDist();
     REP(j, stageData.levelCnt) {
       stageData.LoadMap(stdin);
-//      fprintf(stderr, "Stage:%d-%d\n", stage + 1, j + 1);
-//      fprintf(stderr, "Ans:%d %d\n", plife - stageData.infos.back().life, stageData.infos.back().money - pmoney);
-//      if (stage != 40 && j == 0) {
-//        assert(plife - ans.first == stageData.infos.back().life);
-//        assert(pmoney + ans.second == stageData.infos.back().money);
-//      }
+      fprintf(stderr, "Stage:%d-%d\n", stage + 1, j + 1);
+      fprintf(stderr, "Ans:%d %d\n", plife - stageData.infos.back().life, stageData.infos.back().money - pmoney);
+      if (stage != 40 && j == 0) {
+        assert(plife - ans.first == stageData.infos.back().life);
+        assert(pmoney + ans.second == stageData.infos.back().money);
+      }
       plife = stageData.infos.back().life;
       pmoney = stageData.infos.back().money;
 
@@ -222,8 +189,8 @@ int main() {
         printf("%d %d %d %d\n", it->x, it->y, it->level, it->type);
       }
       fflush(stdout);
-//      ans = simulator.OneMapSimulation(stage, j, output, stageData.infos[j].tower);
-//      fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
+      ans = simulator.OneMapSimulation(stage, j, output, stageData.infos[j].tower);
+      fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }
 }

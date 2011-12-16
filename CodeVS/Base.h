@@ -1,6 +1,4 @@
 #pragma once
-#ifndef __TEST__
-#define __TEST__
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -44,4 +42,6 @@ void PrintMatrix(const T mat[51][51], int w, int h) {
   }
 }
 
-#endif
+inline int CalcCost(int type, int plevel, int level) {
+  return (10 + 5 * type) * ((level + 1) * (level + 2) / 2 - (plevel + 1) * (plevel + 2) / 2);
+}

@@ -29,13 +29,14 @@ struct Simulator {
 	};
 	struct Enemy {
 		EnemyInfo info;
+    int index;
 		int x;
 		int y;
 		int life;
 		int wait;
 		int charge;
 		bool alive;
-		Enemy(EnemyInfo info) : info(info), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
+		Enemy(EnemyInfo info, int index) : info(info), index(index), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
 	};
 	vector<StageData> stages;
 	Simulator() {;}
@@ -127,25 +128,26 @@ struct Simulator {
 
       //“G‚ð’Ç‰Á
 			while (index < (int)enemyInfos.size() && enemyInfos[index].t == frame) {
-				enemys.push_back(enemyInfos[index]);
+				enemys.push_back(Enemy(enemyInfos[index], index));
 				index++;
 			}
 
       //ƒ^ƒ[‚Ìˆ—
       FORIT(it1, towers) {
-        REP(i, enemys.size()) {
-          int d = square(it1->x - enemys[i].x) + square(it1->y - enemys[i].y);
-          bool in = enemys[i].alive && d <= it1->Range2();
-          FORIT(it2, it1->target) {
-            if (*it2 == i) {
+        FORIT(it2, enemys) {
+          if (!it2->alive) { continue; }
+          int d = square(it1->x - it2->x) + square(it1->y - it2->y);
+          bool in = d <= it1->Range2();
+          FORIT(it3, it1->target) {
+            if (*it3 == it2->index) {
               if (!in) {
-                it1->target.erase(it2);
+                it1->target.erase(it3);
               }
               goto next;
             }
           }
           if (in) {
-            it1->target.push_back(i);
+            it1->target.push_back(it2->index);
           }
 next:;
         }
@@ -164,19 +166,30 @@ next:;
 
       //“G‚ªŽ€–S‚µ‚Ä‚é‚©‚Ç‚¤‚©‚ÆƒS[ƒ‹‚É‚½‚Ç‚è’…‚¢‚Ä‚é‚©‚Ç‚¤‚©‚ðŠm”F
       int deadCnt = 0;
-      FORIT(it, enemys) {
-        if (it->life <= 0) {
-          if (it->alive && stage < 40) {
-            int money = (it->info.life - (frame - it->info.t)) / 10;
+      FORIT(it1, enemys) {
+        bool palive = it1->alive;
+        if (it1->life <= 0) {
+          if (it1->alive && stage < 40) {
+            int money = (it1->info.life - (frame - it1->info.t)) / 10;
             ret.second += money;
           }
           deadCnt++;
-          it->alive = false;
-        } else if (field.field[it->y][it->x] == 'g') {
+          it1->alive = false;
+        } else if (field.field[it1->y][it1->x] == 'g') {
           ret.first++;
-          it->life = -1;
+          it1->life = -1;
           deadCnt++;
-          it->alive = false;
+          it1->alive = false;
+        }
+        if (palive != it1->alive) {
+          FORIT(it2, towers) {
+            FORIT(it3, it2->target) {
+              if (*it3 == it1->index) {
+                it2->target.erase(it3);
+                break;
+              }
+            }
+          }
         }
       }
       if (deadCnt == enemyInfos.size()) { break; }
