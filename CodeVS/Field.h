@@ -18,7 +18,22 @@ struct Field {
 	vector<Point> ss;
 	vector<Point> gs;
 	Field() {;}
-	Field(int f[51][51], int w, int h) : w(w), h(h) {
+  Field(const Field &rhs) {
+    this->w = rhs.w;
+    this->h = rhs.h;
+    memcpy(this->field, rhs.field, sizeof(this->field));
+    memcpy(this->move, rhs.move, sizeof(this->move));
+    memcpy(this->dist, rhs.dist, sizeof(this->dist));
+  }
+  Field &operator=(const Field &rhs) {
+    this->w = rhs.w;
+    this->h = rhs.h;
+    memcpy(this->field, rhs.field, sizeof(this->field));
+    memcpy(this->move, rhs.move, sizeof(this->move));
+    memcpy(this->dist, rhs.dist, sizeof(this->dist));
+    return *this;
+  }
+	Field(const int f[51][51], int w, int h) : w(w), h(h) {
 		memcpy(field, f, sizeof(field));
 		MEMSET(move, 0x0f);
 		MEMSET(dist, 0x0f);

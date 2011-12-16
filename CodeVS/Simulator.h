@@ -38,7 +38,7 @@ struct Simulator {
 		bool alive;
 		Enemy(EnemyInfo info, int index) : info(info), index(index), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
 	};
-	vector<StageData> stages;
+	vector<MapInfo> stages;
 	Simulator() {;}
 	Simulator(const char *filename) { Load(filename); }
 	void Release() {
@@ -53,7 +53,7 @@ struct Simulator {
 		int v = fscanf(fp, "%d", &stageCnt);
 		assert(v == 1);
 		REP(i, stageCnt) {
-			StageData stage;
+			MapInfo stage;
 			ret &= stage.Load(fp);
 			stages.push_back(stage);
 		}
@@ -62,15 +62,15 @@ struct Simulator {
 	}
 
   //1ステージのシミューレーション
-	pair<int, int> OneStageSimulation(int stage, const vector<TowerInfo> &towers) {
+	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers) {
     vector<TowerInfo> nothing;
 		pair<int, int> ret(0, 0);
-		REP(i, stages[stage].infos.size()) {
+		REP(i, stages[stage].levels.size()) {
 			pair<int, int> nret;
       if (i == 0) {
-        OneMapSimulation(stage, i, towers, nothing);
+        LevelSimulation(stage, i, towers, nothing);
       } else {
-        OneMapSimulation(stage, i, nothing, towers);
+        LevelSimulation(stage, i, nothing, towers);
       }
 			ret.first += nret.first;
 			ret.second += nret.second;
@@ -79,7 +79,7 @@ struct Simulator {
 	}
 
   //1レベルのシミュレーション
-	pair<int, int> OneMapSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, const vector<TowerInfo> &oldTowerInfos) {
+	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, const vector<TowerInfo> &oldTowerInfos) {
 		pair<int, int> ret(0, 0);
 		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
     {
@@ -96,7 +96,7 @@ struct Simulator {
       ret.second -= nret;
     }
 
-		vector<EnemyInfo> enemyInfos = stages[stage].infos[level].enemy;
+		vector<EnemyInfo> enemyInfos = stages[stage].levels[level].enemy;
 		stable_sort(enemyInfos.begin(), enemyInfos.end());
 		vector<Enemy> enemys;
 		vector<Tower> towers;

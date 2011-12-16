@@ -30,13 +30,13 @@ struct EnemyInfo {
   }
 };
 
-struct MapInitalInfo {
+struct LevelInfo {
 	vector<TowerInfo> tower;
 	vector<EnemyInfo> enemy;
 	int life;
 	int money;
-	MapInitalInfo() {;}
-	MapInitalInfo(FILE *fp) { Load(fp); }
+	LevelInfo() {;}
+	LevelInfo(FILE *fp) { Load(fp); }
 	void Release() {
 		tower.clear();
 		enemy.clear();
@@ -66,17 +66,17 @@ struct MapInitalInfo {
 	}
 };
 
-struct StageData {
+struct MapInfo {
 	int w, h;
 	int field[51][51];
 	int levelCnt;
-	vector<MapInitalInfo> infos;
-	StageData() {;}
-	StageData(FILE *fp) { Load(fp); }
+	vector<LevelInfo> levels;
+	MapInfo() {;}
+	MapInfo(FILE *fp) { Load(fp); }
 	void Release() {
 		w = 0xdeadbeaf; h = 0xdeadbeaf;
 		MEMSET(field, 0x0f);
-		infos.clear();
+		levels.clear();
 	}
 	bool LoadHeader(FILE *fp) {
 		Release();
@@ -97,12 +97,12 @@ struct StageData {
 		assert(v == 0);
     return ret;
 	}
-	bool LoadMap(FILE *fp) {
-		assert((int)infos.size() < levelCnt);
+	bool LoadLevel(FILE *fp) {
+		assert((int)levels.size() < levelCnt);
 		bool ret = true;
-		MapInitalInfo info;
+		LevelInfo info;
 		ret &= info.Load(fp);
-		infos.push_back(info);
+		levels.push_back(info);
 		return ret;
 	}
 	bool Load(FILE *fp) {
@@ -110,7 +110,7 @@ struct StageData {
 		bool ret = true;
 		ret = LoadHeader(fp);
 		REP(i, levelCnt) {
-			LoadMap(fp);
+			LoadLevel(fp);
 		}
 		return ret;
 	}
