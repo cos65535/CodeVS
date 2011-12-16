@@ -68,6 +68,7 @@
     <ClInclude Include="Field.h" />
     <ClInclude Include="RappidPut.h" />
     <ClInclude Include="Structure.h" />
+    <ClInclude Include="Tron.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

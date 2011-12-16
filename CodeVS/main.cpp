@@ -3,10 +3,31 @@
 #include "Simulator.h"
 #include "Structure.h"
 #include "RappidPut.h"
+#include "Tron.h"
+
+void Test(Simulator &simulator, int map) {
+  pair<int, int> result;
+  vector<TowerInfo> old;
+  REP(level, 25) {
+    fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
+    
+    vector<TowerInfo> output;
+    output = Tron::TronAI(simulator.stages[map], map, level);
+    pair<int, int> nret = simulator.LevelSimulation(map, level, output, old);
+    old = output;
+    printf("Ans %d: Damage:%d Money:%d\n", level + 1, nret.first, nret.second);
+    result.first += nret.first;
+    result.second += nret.second;
+  }
+  printf("Total: Damage:%d Money:%d\n", result.first, result.second);
+}
 
 int main() {
   srand(123456789);
   Simulator simulator("input.txt");
+  Test(simulator, 40);
+  return 0;
+
   int mapCnt;
   scanf("%d", &mapCnt);
   int plife = 10;
@@ -27,7 +48,11 @@ int main() {
       pmoney = mapInfo.levels.back().money;
 
       vector<TowerInfo> output;
-      output = RappidPut(Field(mapInfo.field, mapInfo.w, mapInfo.h), map, level, mapInfo.levels.back().tower, mapInfo.levels.back().money);
+      if (map < 40) {
+        output = RappidPut(Field(mapInfo.field, mapInfo.w, mapInfo.h), map, level, mapInfo.levels.back().tower, mapInfo.levels.back().money);
+      } else {
+        output = Tron::TronAI(mapInfo, map, level);
+      }
 
       // Print
       printf("%d\n", (int)output.size());

@@ -14,41 +14,6 @@ struct Point {
   }
 };
 
-bool dfs(const int field[51][51], bool visit[51][51], int x, int y) {
-  if (visit[y][x]) { return false; }
-  visit[y][x] = true;
-  bool ret = field[y][x] == 'g';
-  const int dx[4] = { 1, 0, -1, 0 };
-  const int dy[4] = { 0, 1, 0, -1 };
-  REP(dir, 4) {
-    int nx = x + dx[dir];
-    int ny = y + dy[dir];
-    if (field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g') { continue; }
-    ret |= dfs(field, visit, nx, ny);
-  }
-  return ret;
-}
-
-bool OK(Field &field, int bx, int by) {
-  if (field.field[by][bx] != '0') { return false; }
-  bool visit[51][51];
-  MEMSET(visit, false);
-  field.field[by][bx] = 'P';
-  REP(y, field.h) {
-    REP(x, field.w) {
-      if (visit[y][x]) { continue; }
-      if (field.field[y][x] == 's') {
-        if (!dfs(field.field, visit, x, y)) { goto ng; }
-      }
-    }
-  }
-  field.field[by][bx] = '0';
-  return true;
-ng:;
-  field.field[by][bx] = '0';
-  return false;
-}
-
 
 vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo> &tower, int money) {
   vector<TowerInfo> ret;
@@ -71,7 +36,9 @@ vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo>
   if (!tower.empty()) { return ret; }
   int w = field.w;
   int h = field.h;
-  bool visit[60][60];
+  bool visit[51][51];
+  int mask[51][51];
+  MEMSET(mask, 0);
   REP(sy, h) {
     REP(sx, w) {
       if (field.field[sy][sx] != 's') { continue; }
@@ -110,7 +77,7 @@ vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo>
       while (!que.empty()) {
         Point p = que.top();
         que.pop();
-        if (OK(field, p.x, p.y)) {
+        if (field.OK(mask, p.x, p.y)) {
           int level = 4;
           //if (cnt == 1) { level = 0; }
           int type = 0;

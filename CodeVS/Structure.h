@@ -64,6 +64,18 @@ struct LevelInfo {
     assert(v == 0);
 		return true;
 	}
+
+  ////‚¿‚ª‚¤ƒ^ƒ[‚ÌŒš‚Ä•û‚ğ‚µ‚Ä‚à‚»‚Ì‚Ü‚Ü‚Ìo—Í‚ğ‚·‚é
+  //void Print() {
+  //  printf("%d %d %d %d\n", life, money, (int)tower.size(), (int)enemy.size());
+  //  REP(i, tower.size()) {
+  //    printf("%d %d %d %d\n", tower[i].x, tower[i].y, tower[i].level, tower[i].type);
+  //  }
+  //  REP(i, enemy.size()) {
+  //    printf("%d %d %d %D\n", enemy[i].x, enemy[i].y, enemy[i].t, enemy[i].life, enemy[i].speed);
+  //  }
+  //  printf("END\n");
+  //}
 };
 
 struct MapInfo {
@@ -114,4 +126,18 @@ struct MapInfo {
 		}
 		return ret;
 	}
+  //void Print() {
+  //  printf("%d %d\n", w, h);
+  //  REP(y, h) {
+  //    REP(x, w) {
+  //      printf("%c", (char)field[y][x]);
+  //    }
+  //    puts("");
+  //  }
+  //  fprintf("%d\n", levelCnt);
+  //  fprintf("END\n");
+  //  REP(i, levelCnt) {
+  //    levels[i].Print();
+  //  }
+  //}
 };

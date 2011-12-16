@@ -61,7 +61,16 @@ struct Simulator {
 		return ret;
 	}
 
-  //1ステージのシミューレーション
+  //void SkipInput() {
+  //  while (scanf("%*s") != EOF);
+  //}
+
+  //void PrintMap(int map) {
+  //  printf("1\n");
+  //  stages[map].Print();
+  //}
+
+  //1マップのシミューレーション
 	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers) {
     vector<TowerInfo> nothing;
 		pair<int, int> ret(0, 0);
