@@ -142,8 +142,8 @@ public:
 				if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
 				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
 				if (dir % 2 == 1) {
-					if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][nx] != 0) { continue; }
-					if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+					if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x] != 0) { continue; }
+					if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx] != 0) { continue; }
 				}
 				dist[ny][nx] = ndist;
 				que.push(DistPoint(nx, ny, ndist, dir));
@@ -168,7 +168,7 @@ public:
   }
 
   bool OK(int mask[51][51], int bx, int by) {
-    if (mask[bx][by] == 1 || field[by][bx] != '0') { return false; }
+    if (mask[by][bx] == 1 || field[by][bx] != '0') { return false; }
     bool visit[51][51];
     MEMSET(visit, false);
     field[by][bx] = 'P';

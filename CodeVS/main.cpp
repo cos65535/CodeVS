@@ -24,9 +24,9 @@ void Test(Simulator &simulator, int map) {
 
 int main() {
   srand(123456789);
-  Simulator simulator("input.txt");
-  Test(simulator, 40);
-  return 0;
+//  Simulator simulator("input.txt");
+//  Test(simulator, 40);
+  //return 0;
 
   int mapCnt;
   scanf("%d", &mapCnt);
@@ -38,14 +38,15 @@ int main() {
     mapInfo.LoadHeader(stdin);
     REP(level, mapInfo.levelCnt) {
       mapInfo.LoadLevel(stdin);
-      fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
-      fprintf(stderr, "Ans:%d %d\n", plife - mapInfo.levels.back().life, mapInfo.levels.back().money - pmoney);
-      if (map != 40 && level == 0) {
-        assert(plife - ans.first == mapInfo.levels.back().life);
-        assert(pmoney + ans.second == mapInfo.levels.back().money);
-      }
-      plife = mapInfo.levels.back().life;
-      pmoney = mapInfo.levels.back().money;
+
+      //fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
+      //fprintf(stderr, "Ans:%d %d\n", plife - mapInfo.levels.back().life, mapInfo.levels.back().money - pmoney);
+      //if (map != 40 && level == 0) {
+      //  assert(plife - ans.first == mapInfo.levels.back().life);
+      //  assert(pmoney + ans.second == mapInfo.levels.back().money);
+      //}
+      //plife = mapInfo.levels.back().life;
+      //pmoney = mapInfo.levels.back().money;
 
       vector<TowerInfo> output;
       if (map < 40) {
@@ -60,8 +61,8 @@ int main() {
         printf("%d %d %d %d\n", it->x, it->y, it->level, it->type);
       }
       fflush(stdout);
-      ans = simulator.LevelSimulation(map, level, output, mapInfo.levels[level].tower);
-      fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
+      //ans = simulator.LevelSimulation(map, level, output, mapInfo.levels[level].tower);
+      //fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }
 }

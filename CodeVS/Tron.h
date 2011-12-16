@@ -23,8 +23,8 @@ namespace Tron {
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int bestMask[51][51];
     int bestDist = -1;
-      MEMSET(bestMask, 0x0f);
-    REP(iter, 1000) {
+    MEMSET(bestMask, 0x0f);
+    REP(iter, 100) {
       int mask[51][51];
       int dist = 0;
       int use = 0;
@@ -46,9 +46,10 @@ namespace Tron {
       int ppx = px;
       int ppy = py;
       int dir = rand() % 4;
+      int ngCnt = 0;
       REP(iter, 1000) {
         if (use > 200) { break; }
-        dir = (dir + 3) % 4;;
+        dir = (dir + 3) % 4;
         if (rand() % 100 < 10) {
           dir = rand() % 4;
         }
@@ -67,6 +68,7 @@ namespace Tron {
           Put(field, mask, nnx, nny, use);
         }
         if (ng) {
+          ngCnt++;
           REP(d, 4) {
             int nnx = px + dx[d];
             int nny = py + dy[d];
@@ -75,46 +77,49 @@ namespace Tron {
               mask[nny][nnx] = 0;
             }
           }
+          if (ngCnt <= 10) { goto next; }
         }
+        ngCnt = 0;
         ppx = px;
         ppy = py;
         px = nx;
         py = ny;
+next:;
       }
 
-    dist = field.CalcDist(mask);
-    printf("%d %d\n", dist, use);
-    REP(y, h) {
-      REP(x, w) {
-        if (field.field[y][x] != '0') {
-          printf("%c", field.field[y][x]);
-        } else if (mask[y][x] != 0) {
-          printf("2");
-        } else {
-          printf(".");
-        }
-      }
-      puts(""); 
-    }
+      dist = field.CalcDist(mask);
+    //printf("%d %d\n", dist, use);
+    //REP(y, h) {
+    //  REP(x, w) {
+    //    if (field.field[y][x] != '0') {
+    //      printf("%c", field.field[y][x]);
+    //    } else if (mask[y][x] != 0) {
+    //      printf("2");
+    //    } else {
+    //      printf(".");
+    //    }
+    //  }
+    //  puts(""); 
+    //}
       // bestを更新
         if (dist > bestDist) {
         memcpy(bestMask, mask, sizeof(bestMask));
         bestDist = dist;
       }
     }
-    printf("%d\n", bestDist);
-    REP(y, h) {
-      REP(x, w) {
-        if (field.field[y][x] != '0') {
-          printf("%c", field.field[y][x]);
-        } else if (bestMask[y][x] != 0) {
-          printf("2");
-        } else {
-          printf(".");
-        }
-      }
-      puts("");
-    } 
+    //printf("%d\n", bestDist);
+    //REP(y, h) {
+    //  REP(x, w) {
+    //    if (field.field[y][x] != '0') {
+    //      printf("%c", field.field[y][x]);
+    //    } else if (bestMask[y][x] != 0) {
+    //      printf("2");
+    //    } else {
+    //      printf(".");
+    //    }
+    //  }
+    //  puts("");
+    //} 
 
     // TODO どこに強いタワーを置くかを適切に求める
     vector<TowerInfo> ret;
