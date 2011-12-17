@@ -15,7 +15,10 @@ struct Point {
 };
 
 
-vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo> &tower, int money) {
+vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level) {
+  Field field(mapInfo.field, mapInfo.w, mapInfo.h);
+  vector<TowerInfo> tower = mapInfo.levels[level].tower;
+  int money = mapInfo.levels[level].money;
   vector<TowerInfo> ret;
   if (stage == 0) {
     if (level == 0) {
@@ -34,6 +37,16 @@ vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo>
     }
   }
   if (!tower.empty()) { return ret; }
+
+  int mapUse[40];
+  REP(i, 40) { mapUse[i] = 1; }
+  mapUse[12] = 2;
+  mapUse[18] = 2;
+  mapUse[26] = 2;
+  mapUse[35] = 2;
+  mapUse[37] = 2;
+  mapUse[38] = 2;
+
   int w = field.w;
   int h = field.h;
   bool visit[51][51];
@@ -47,26 +60,26 @@ vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo>
       MEMSET(visit, false);
       visit[sy][sx] = true;
       double cnt = 0;
-      while (!que.empty()) {
-        Point p = que.top();
-        que.pop();
-        if (p.cost >= 5) { break; }
-        if (field.field[p.y][p.x] == 'P') {
-          cnt++;
-        }
-        REP(dir, 8) {
-          const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };
-          const int dy[8] = { 0, 1, 0, -1, 1, -1, 1, -1 };
-          int nx = p.x + dx[dir];
-          int ny = p.y + dy[dir];
-          if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
-          if (visit[ny][nx]) { continue; }
-          visit[ny][nx] = true;
-          double ncost = p.cost + 1;
-          if (dir > 4) { ncost = p.cost + 1.41421356; }
-          que.push(Point(nx, ny, ncost));
-        }
-      }
+      //while (!que.empty()) {
+      //  Point p = que.top();
+      //  que.pop();
+      //  if (p.cost >= 5) { break; }
+      //  if (field.field[p.y][p.x] == 'P') {
+      //    cnt++;
+      //  }
+      //  REP(dir, 8) {
+      //    const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };
+      //    const int dy[8] = { 0, 1, 0, -1, 1, -1, 1, -1 };
+      //    int nx = p.x + dx[dir];
+      //    int ny = p.y + dy[dir];
+      //    if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
+      //    if (visit[ny][nx]) { continue; }
+      //    visit[ny][nx] = true;
+      //    double ncost = p.cost + 1;
+      //    if (dir > 4) { ncost = p.cost + 1.41421356; }
+      //    que.push(Point(nx, ny, ncost));
+      //  }
+      //}
 
       //if (cnt >= 2) { continue; }
       que = priority_queue<Point>();
@@ -85,14 +98,7 @@ vector<TowerInfo> RappidPut(Field field, int stage, int level, vector<TowerInfo>
           ret.push_back(TowerInfo(p.x, p.y, level, type));
           cnt++;
           field.field[p.y][p.x] = 'P';
-          if (stage < 10 && cnt > 0) { break; }
-          if (stage >= 10 && stage < 40 && cnt > 1) { break; }
-          if (stage == 40 && cnt > 20) { break; }
-          if (stage >= 41 && stage <= 46&& cnt > 60) { break; }
-          if (stage == 47 && cnt > 50) { break; }
-          if (stage == 48 && cnt > 35) { break; }
-          if (stage >= 49 && cnt > 70) { break; }
-//          if (cnt > 0) { break; }
+          if (cnt >= mapUse[stage]) { break; }
         }
         REP(dir, 8) {
           const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };

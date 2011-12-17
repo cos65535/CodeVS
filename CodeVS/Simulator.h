@@ -77,9 +77,9 @@ struct Simulator {
 		REP(i, stages[stage].levels.size()) {
 			pair<int, int> nret;
       if (i == 0) {
-        LevelSimulation(stage, i, towers, nothing);
+        LevelSimulation(stage, i, towers);
       } else {
-        LevelSimulation(stage, i, nothing, towers);
+        LevelSimulation(stage, i, nothing);
       }
 			ret.first += nret.first;
 			ret.second += nret.second;
@@ -88,11 +88,11 @@ struct Simulator {
 	}
 
   //1レベルのシミュレーション
-	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, const vector<TowerInfo> &oldTowerInfos) {
+	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos) {
 		pair<int, int> ret(0, 0);
 		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
     {
-      int nret = field.PutTower(oldTowerInfos);
+      int nret = field.PutTower(stages[stage].levels[level].tower);
       if (nret == -1) {
         ret.first = -1000;
         return ret;
@@ -203,6 +203,23 @@ next:;
       }
       if (deadCnt == enemyInfos.size()) { break; }
 		}
+
+    int nstage = stage;
+    int nlevel = level + 1;
+    if (nlevel == 25) { nstage++; nlevel = 0; }
+    if ((int)stages.size() > nstage && (int)stages[nstage].levels.size() > nlevel) {
+      if (nlevel != 0) {
+        stages[nstage].levels[nlevel].tower.clear();
+        FORIT(it, stages[stage].levels[level].tower) {
+          stages[nstage].levels[nlevel].tower.push_back(*it);
+        }
+        FORIT(it, towerInfos) {
+          stages[nstage].levels[nlevel].tower.push_back(*it);
+        }
+      }
+      stages[nstage].levels[nlevel].life = stages[stage].levels[level].life + ret.first;
+      stages[nstage].levels[nlevel].money = stages[stage].levels[level].money + ret.second;
+    }
 		return ret;
 	}
 };

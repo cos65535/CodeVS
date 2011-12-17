@@ -23,7 +23,6 @@ public:
 	int h;
 	int field[51][51];
 	int move[51][51];
-	int dist[51][51];
 	struct Point {
 		int x;
 		int y;
@@ -38,20 +37,17 @@ public:
     this->h = rhs.h;
     memcpy(this->field, rhs.field, sizeof(this->field));
     memcpy(this->move, rhs.move, sizeof(this->move));
-    memcpy(this->dist, rhs.dist, sizeof(this->dist));
   }
   Field &operator=(const Field &rhs) {
     this->w = rhs.w;
     this->h = rhs.h;
     memcpy(this->field, rhs.field, sizeof(this->field));
     memcpy(this->move, rhs.move, sizeof(this->move));
-    memcpy(this->dist, rhs.dist, sizeof(this->dist));
     return *this;
   }
 	Field(const int f[51][51], int w, int h) : w(w), h(h) {
 		memcpy(field, f, sizeof(field));
 		MEMSET(move, 0x0f);
-		MEMSET(dist, 0x0f);
 		ss.clear();
 		gs.clear();
 		REP(y, h) {
@@ -65,7 +61,8 @@ public:
 			}
 		}
 	}
-	int PutTower(const vector<TowerInfo> &tower) {
+
+  int PutTower(const vector<TowerInfo> &tower) {
     int ret = 0;
 		FORIT(it, tower) {
 			assert(0 <= it->type && it->type <= 2);
@@ -78,18 +75,22 @@ public:
       }
 			field[it->y][it->x] = (it->type + 1) * 1000 + (it->level + 1) * 100;
 		}
-		CalcMove();
+    int mask[51][51];
+    MEMSET(mask, 0);
+		CalcMove(mask, move);
     return ret;
 	}
-	void CalcMove() {
+
+  void CalcMove(const int mask[51][51], int move[51][51]) const {
 		priority_queue<DistPoint> que;
 		FORIT(it, gs) {
 			que.push(DistPoint(it->x, it->y, 0, 0));
 		}
 		bool visit[51][51];
+  	int dist[51][51];
 		MEMSET(visit, false);
 		MEMSET(dist, 0x0f);
-    MEMSET(move, 0x0f);
+    memset(move, 0x0f, sizeof(int) * 51 * 51);
 		while (!que.empty()) {
 			DistPoint p = que.top();
 			que.pop();
@@ -102,18 +103,18 @@ public:
 				int nx = p.x + dx[dir];
 				int ny = p.y + dy[dir];
 				int ndist = p.dist + 2 + dir % 2;
-				if (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') { continue; }
+				if (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g' || mask[ny][nx]) { continue; }
 				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
 				if (dir % 2 == 1) {
-					if (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') { continue; }
-					if (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') { continue; }
+					if (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g' || mask[ny][p.x]) { continue; }
+					if (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g' || mask[p.y][nx]) { continue; }
 				}
 				dist[ny][nx] = ndist;
 				que.push(DistPoint(nx, ny, ndist, dir));
 			}
 		}
 	}
-  int CalcDist(const int mask[51][51]) {
+  int CalcDist(const int mask[51][51]) const {
     bool visit[51][51];
     int dist[51][51];
     MEMSET(visit, false);
@@ -152,6 +153,7 @@ public:
     if (cnt != ss.size()) { return 1 << 28; }
     return ret;
   }
+
   bool dfs(int mask[51][51], bool visit[51][51], int x, int y) const {
     if (visit[y][x]) { return false; }
     visit[y][x] = true;
@@ -167,11 +169,11 @@ public:
     return ret;
   }
 
-  bool OK(int mask[51][51], int bx, int by) {
-    if (mask[by][bx] == 1 || field[by][bx] != '0') { return false; }
+  bool OK(int mask[51][51], int bx, int by) const {
+    if (mask[by][bx] != 0 || field[by][bx] != '0') { return false; }
     bool visit[51][51];
     MEMSET(visit, false);
-    field[by][bx] = 'P';
+    mask[by][bx] = 1;
     REP(y, h) {
       REP(x, w) {
         if (visit[y][x]) { continue; }
@@ -180,10 +182,29 @@ public:
         }
       }
     }
-    field[by][bx] = '0';
+    mask[by][bx] = 0;
     return true;
   ng:;
-    field[by][bx] = '0';
+    mask[by][bx] = 0;
     return false;
+  }
+
+  void CalcEnemyRoute(const int mask[51][51], int route[51][51]) const {
+    int move[51][51];
+    CalcMove(mask, move);
+    memset(route, 0, sizeof(int) * 51 * 51);
+    FORIT(it, ss) {
+      int x = it->x;
+      int y = it->y;
+      while (field[y][x] != 'g') {
+        route[y][x]++;
+			  const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+			  const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+        int nx = x + dx[move[y][x]];
+        int ny = y + dy[move[y][x]];
+        x = nx;
+        y = ny;
+      }
+    }
   }
 };

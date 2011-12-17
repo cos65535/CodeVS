@@ -85,6 +85,21 @@ struct MapInfo {
 	vector<LevelInfo> levels;
 	MapInfo() {;}
 	MapInfo(FILE *fp) { Load(fp); }
+  MapInfo(const MapInfo &rhs) {
+    w = rhs.w;
+    h = rhs.h;
+    memcpy(field, rhs.field, sizeof(int) * 51 * 51);
+    levelCnt = rhs.levelCnt;
+    levels = rhs.levels;
+  }
+  MapInfo &operator=(const MapInfo &rhs) {
+    w = rhs.w;
+    h = rhs.h;
+    memcpy(field, rhs.field, sizeof(int) * 51 * 51);
+    levelCnt = rhs.levelCnt;
+    levels = rhs.levels;
+    return *this;
+  }
 	void Release() {
 		w = 0xdeadbeaf; h = 0xdeadbeaf;
 		MEMSET(field, 0x0f);
