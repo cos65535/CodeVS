@@ -11,7 +11,7 @@ struct Simulator {
 		int level;
 		int type;
 		int charge;
-		deque<int> target;
+		list<int> target;
 		Tower(TowerInfo info) : x(info.x), y(info.y), level(info.level), type(info.type), charge(0) {;}
 		int Attack() const {
 			int at[3] = { 10, 20, 3 };

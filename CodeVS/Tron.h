@@ -25,9 +25,14 @@ namespace Tron {
     REP(y, field.h) {
       REP(x, field.w) {
         if (field.field[y][x] != '0') {
-          printf("%c", field.field[y][x]);
+          int v = field.field[y][x];
+          if (v == 1100) { v = '2'; }
+          if (v == 1500) { v = '3'; }
+          printf("%c", v);
         } else if (mask[y][x] != 0) {
-          printf("2");
+          int v = '4';
+          if (mask[y][x] == 15) { v = '5'; }
+          printf("%c", v);
         } else {
           printf(".");
         }
@@ -55,7 +60,7 @@ namespace Tron {
   int Put(const Field &field, int mask[51][51], int x, int y, int &use) {
     if (field.field[y][x] != '0') { return use; }
     if (mask[y][x] != 0) { return use; }
-    mask[y][x] = 1;
+    mask[y][x] = 11;
     use++;
     return use;
   }
@@ -201,67 +206,10 @@ next:;
         }
       }
       if (tx == -1) { break; }
-      bestMask[ty][tx] = 1;
+      bestMask[ty][tx] = 11;
       use++;
     }
     return use;
-  }
-
-  void PutRestTower(const Field &field, int bestMask[51][51], int useCnt) {
-    struct Point {
-      int x;
-      int y;
-      int cnt;
-      Point() {;}
-      Point(int x, int y, int cnt) : x(x), y(y), cnt(cnt) {;}
-      bool operator<(const Point &rhs) const {
-        return cnt < rhs.cnt;
-      }
-    };
-
-    const int w = field.w;
-    const int h = field.h;
-    const int bestDist = field.CalcDist(bestMask);
-    int route[51][51];
-    field.CalcEnemyRoute(bestMask, route);
-    int cnt = 0;
-
-    priority_queue<Point> que;
-    REP(sy, h) {
-      REP(sx, w) {
-        if (bestMask[sy][sx] == 0 && !field.OK(bestMask, sx, sy)) { continue; }
-        int sum = 0;
-        REP(ty, h) {
-          REP(tx, w) {
-            int d = square(sy - ty) + square(sx - tx);
-            if (d > square(4 + 4)) { continue; }
-            sum += route[ty][tx];
-          }
-        }
-        if (sum > 30 || bestMask[sy][sx] != 0) {
-          que.push(Point(sx, sy, sum));
-        }
-      }
-    }
-
-    int rest = useCnt - cnt;
-    while (!que.empty()) {
-      Point p = que.top();
-      que.pop();
-      if (bestMask[p.y][p.x] != 0 || rest > 0 && field.OK(bestMask, p.x, p.y)) {
-        if (bestMask[p.y][p.x] == 21) { continue; }
-        bool freeze = p.cnt < 20;
-        //FORIT(it, field.gs) {
-        //  if (abs(it->x - p.x) + abs(it->y - p.y) <= 2) { freeze = true; }
-        //}
-        if (freeze) {
-          bestMask[p.y][p.x] = 11;
-        } else {
-          bestMask[p.y][p.x] = 15;
-        }
-        rest--;
-      }
-    }
   }
 
   void SetTower(const Field &field, int bestMask[51][51], const vector<TowerInfo> &old) {
@@ -303,44 +251,39 @@ next:;
 
     while (true) {
       Field field(mapInfo.field, w, h);
-      //PrintMask(field, mask);
       vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[level].money);
       pair<int, int> ans = simulator.LevelSimulation(0, level, tower);
       if (ans.first == 0) { break; }
 
       if (level != 0) {
-        field.PutTower(mapInfo.levels[level - 1].tower);
+        field.PutTower(mapInfo.levels[level].tower);
       }
       int route[51][51];
       field.CalcEnemyRoute(mask, route);
-      if (rand() % 2 == 0) {
-        int use = CalcUse(field, mask);
-        //ExpandMask(field, mask, use + 1);
-      } else {
-        int bestSum = -1;
-        int tx = -1;
-        int ty = -1;
-        REP(sy, h) {
-          REP(sx, w) {
-            if (!field.OK(mask, sx, sy)) { continue; }
-            int sum = 0;
-            REP(y, h) {
-              REP(x, w) {
-                int d = square(sy - y) + square(sx - x);
-                if (d > square(4 + 4)) { continue; }
-                sum += route[y][x];
-              }
-            }
-            if (sum > bestSum) {
-              bestSum = sum;
-              tx = sx;
-              ty = sy;
+      int bestSum = -1;
+      int tx = -1;
+      int ty = -1;
+      REP(sy, h) {
+        REP(sx, w) {
+          if (mask[sy][sx] == 15 || field.field[sy][sx] == 1500) { continue; }
+          if (field.field[sy][sx] != 1100 && mask[sy][sx] == 0 && !field.OK(mask, sx, sy)) { continue; }
+          int sum = 0;
+          REP(y, h) {
+            REP(x, w) {
+              int d = square(sy - y) + square(sx - x);
+              if (d > square(4 + 4)) { continue; }
+              sum += route[y][x];
             }
           }
+          if (sum > bestSum) {
+            bestSum = sum;
+            tx = sx;
+            ty = sy;
+          }
         }
-        if (bestSum == -1) { break; }
-        mask[ty][tx] = 15;
       }
+      if (bestSum == -1) { break; }
+      mask[ty][tx] = 15;
     }
   }
 
@@ -354,7 +297,7 @@ next:;
     }
     int mapUse[80];
     REP(i, 80) { mapUse[i] = 70; }
-    mapUse[40] = 2;
+    mapUse[40] = 5;
     mapUse[41] = 6;
     mapUse[42] = 10;
     mapUse[43] = 15;
@@ -396,11 +339,13 @@ next:;
     const int w = mapInfo.w;
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int bestMask[51][51];
-    int bestDist = CalcBestMask(field, bestMask, mapUse[map] + offset);
+    int bestDist = CalcBestMask(field, bestMask, mapUse[map] * 2 + offset);
     EraseUneedTower(field, bestMask);
-    ExpandMask(field, bestMask, mapUse[map] + offset);
-    SetTower(field, bestMask, mapInfo.levels[level].tower);
+    ExpandMask(field, bestMask, mapUse[map] * 2 + offset);
+    //PrintMask(field, bestMask);
+    //SetTower(field, bestMask, mapInfo.levels[level].tower);
     Simulation(mapInfo, map, level, bestMask);
+    //PrintMask(field, bestMask);
 
     return MaskToTower(field, bestMask, mapInfo.levels[level].money);
   }
