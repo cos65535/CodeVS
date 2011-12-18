@@ -40,12 +40,12 @@ vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level) {
 
   int mapUse[40];
   REP(i, 40) { mapUse[i] = 1; }
-  mapUse[12] = 2;
-  mapUse[18] = 2;
-  mapUse[26] = 2;
-  mapUse[35] = 2;
-  mapUse[37] = 2;
-  mapUse[38] = 2;
+  //mapUse[12] = 2;
+  //mapUse[18] = 2;
+  //mapUse[26] = 2;
+  //mapUse[35] = 2;
+  //mapUse[37] = 2;
+  //mapUse[38] = 2;
 
   int w = field.w;
   int h = field.h;

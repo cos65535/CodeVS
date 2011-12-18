@@ -188,16 +188,16 @@ next:;
     const int w = field.w;
     int use = CalcUse(field, bestMask);
     int bestDist = field.CalcDist(bestMask);
-    REP(iter, 100) {
+    REP(iter, 300) {
       if (use >= useCnt) { continue; }
       int tx = -1;
       int ty = -1;
       REP(y, h) {
         REP(x, w) {
-          if (!field.OK(bestMask, tx, ty)) { continue; }
-          bestMask[ty][tx] = 1;
+          if (!field.OK(bestMask, x, y)) { continue; }
+          bestMask[y][x] = 1;
           int dist = field.CalcDist(bestMask);
-          bestMask[ty][tx] = 0;
+          bestMask[y][x] = 0;
           if (dist > bestDist) {
             bestDist = dist;
             tx = x;
@@ -212,30 +212,58 @@ next:;
     return use;
   }
 
-  void SetTower(const Field &field, int bestMask[51][51], const vector<TowerInfo> &old) {
+  void SetFrozenTower(const Field &field, int bestMask[51][51], int frozenCnt) {
+    if (frozenCnt == 0) { return; }
+    struct Point {
+      int x, y;
+      double cost;
+      Point() {;}
+      Point(int x, int y, double cost) : x(x), y(y), cost(cost) {;}
+      bool operator<(const Point &rhs) const {
+        return cost > rhs.cost;
+      }
+    };
     const int w = field.w;
     const int h = field.h;
-    FORIT(it, old) {
-      bestMask[it->y][it->x] = 0;
-    }
     int route[51][51];
     field.CalcEnemyRoute(bestMask, route);
-    REP(sy, h) {
-      REP(sx, w) {
-        if (bestMask[sy][sx] == 0) { continue; }
-        int sum = 0;
-        REP(ty, h) {
-          REP(tx, w) {
-            int d = square(sy - ty) + square(sx - tx);
-            if (d > square(4 + 4)) { continue; }
-            sum += route[ty][tx];
-          }
+    int tx = -1;
+    int ty = -1;
+    FORIT(it, field.gs) {
+      REP(dir, 4) {
+        int nx = it->x + dx[dir];
+        int ny = it->y + dy[dir];
+        if (route[ny][nx] >= 1) {
+          tx = nx;
+          ty = ny;
         }
-        if (sum < 30) {
-          bestMask[sy][sx] = 11;
-        } else {
-          bestMask[sy][sx] = 15;
-        }
+      }
+    }
+    priority_queue<Point> que;
+    que.push(Point(tx, ty, 0));
+    int cnt = 0;
+    bool visit[51][51];
+    MEMSET(visit, false);
+    while (!que.empty()) {
+      Point p = que.top();
+      que.pop();
+      if (visit[p.y][p.x]) { continue; }
+      visit[p.y][p.x] = true;
+      if ((p.y != ty || p.x != tx) && (bestMask[p.y][p.x] || field.OK(bestMask, p.x, p.y))) {
+        int level = 0;
+        while (p.cost > square(2 + level)) { level++; }
+        if (level > 1) { break; }
+        bestMask[p.y][p.x] = 31 + level;
+        cnt++;
+        if (cnt == frozenCnt) { break; }
+      }
+      REP(dir, 4) {
+        int nx = p.x + dx[dir];
+        int ny = p.y + dy[dir];
+        int ncost = square(nx - tx) + square(ny - ty);
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) { continue; }
+        if (visit[ny][nx]) { continue; }
+        que.push(Point(nx, ny, ncost));
       }
     }
   }
@@ -265,7 +293,7 @@ next:;
       int ty = -1;
       REP(sy, h) {
         REP(sx, w) {
-          if (mask[sy][sx] == 15 || field.field[sy][sx] == 1500) { continue; }
+          if (mask[sy][sx] >= 15 || field.field[sy][sx] == 1500) { continue; }
           if (field.field[sy][sx] != 1100 && mask[sy][sx] == 0 && !field.OK(mask, sx, sy)) { continue; }
           int sum = 0;
           REP(y, h) {
@@ -284,6 +312,7 @@ next:;
       }
       if (bestSum == -1) { break; }
       mask[ty][tx] = 15;
+      //PrintMask(field, mask);
     }
   }
 
@@ -297,30 +326,30 @@ next:;
     }
     int mapUse[80];
     REP(i, 80) { mapUse[i] = 70; }
-    mapUse[40] = 5;
-    mapUse[41] = 6;
+    mapUse[40] = 10;
+    mapUse[41] = 10;
     mapUse[42] = 10;
-    mapUse[43] = 15;
-    mapUse[44] = 17;
-    mapUse[45] = 25;
-    mapUse[46] = 18;
-    mapUse[47] = 33;
-    mapUse[48] = 25;
-    mapUse[49] = 25;
-    mapUse[50] = 33;
+    mapUse[43] = 20;
+    mapUse[44] = 20;
+    mapUse[45] = 20;
+    mapUse[46] = 20;
+    mapUse[47] = 33; //!
+    mapUse[48] = 30; //!
+    mapUse[49] = 30; //!
+    mapUse[50] = 40; //!
 
-    mapUse[51] = 29;
-    mapUse[52] = 27;
+    mapUse[51] = 30;
+    mapUse[52] = 40;
     mapUse[53] = 32;
     mapUse[54] = 42;
-    mapUse[55] = 42;
-    mapUse[56] = 45;
-    mapUse[57] = 51;
+    mapUse[55] = 42; //!
+    mapUse[56] = 45; //!
+    mapUse[57] = 51; //!!
     mapUse[58] = 45;
-    mapUse[59] = 70;
+    mapUse[59] = 70; //!!
     mapUse[60] = 51;
 
-    mapUse[61] = 71;
+    mapUse[61] = 71; //!!
     mapUse[62] = 65;
     mapUse[63] = 50;
     mapUse[64] = 58;
@@ -334,16 +363,23 @@ next:;
     mapUse[71] = 80;
     mapUse[72] = 70;
 
-    static const int offset = 5;
+    static const int offset = 15;
     const int h = mapInfo.h;
     const int w = mapInfo.w;
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int bestMask[51][51];
     int bestDist = CalcBestMask(field, bestMask, mapUse[map] * 2 + offset);
+    //PrintMask(field, bestMask);
     EraseUneedTower(field, bestMask);
+    //PrintMask(field, bestMask);
     ExpandMask(field, bestMask, mapUse[map] * 2 + offset);
     //PrintMask(field, bestMask);
-    //SetTower(field, bestMask, mapInfo.levels[level].tower);
+    EraseUneedTower(field, bestMask);
+    //PrintMask(field, bestMask);
+    if (map > 55) {
+      SetFrozenTower(field, bestMask, 12);
+    }
+    //PrintMask(field, bestMask);
     Simulation(mapInfo, map, level, bestMask);
     //PrintMask(field, bestMask);
 

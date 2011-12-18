@@ -1,1 +1,1 @@
-D:\Program\CodeVS\CodeVS\Debug\CodeVS.exe
+D:\Program\CodeVS\CodeVS\Release\CodeVS.exe

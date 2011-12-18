@@ -5,7 +5,7 @@
 #include "RappidPut.h"
 #include "Tron.h"
 
-void Test(Simulator &simulator, int map) {
+int Test(Simulator &simulator, int map) {
   pair<int, int> result;
   vector<TowerInfo> old;
   REP(level, 25) {
@@ -26,14 +26,17 @@ void Test(Simulator &simulator, int map) {
     result.second += nret.second;
   }
   printf("Total %d: Damage:%d Money:%d\n", map + 1, result.first, result.second);
+  return result.second;
 }
 
 int main() {
   srand(123456789);
   //Simulator simulator("input.txt");
-  //FOR(map, 0, 71 -1) {
-  //  Test(simulator, map);
+  //int sum = 0;
+  //FOR(map, 60, 81 -1) {
+  //  sum += Test(simulator, map);
   //}
+  //printf("TotalMoney: %d\n", sum);
   //return 0;
 
   int mapCnt;
