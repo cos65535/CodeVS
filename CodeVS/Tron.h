@@ -252,7 +252,7 @@ next:;
       if ((p.y != ty || p.x != tx) && (bestMask[p.y][p.x] || field.OK(bestMask, p.x, p.y))) {
         int level = 0;
         while (p.cost > square(2 + level)) { level++; }
-        if (level > 1) { break; }
+        if (level > 4) { break; }
         bestMask[p.y][p.x] = 31 + level;
         cnt++;
         if (cnt == frozenCnt) { break; }
@@ -316,7 +316,7 @@ next:;
     }
   }
 
-  vector<TowerInfo> TronAI(const MapInfo &mapInfo, const int map, const int level) {
+  vector<TowerInfo> TronAI(const MapInfo &mapInfo, const int map, const int level, int useCnt = -1, int useFrozenCnt = -1) {
     if (level != 0) {
       Field field(mapInfo.field, mapInfo.w, mapInfo.h);
       int mask[51][51];
@@ -325,7 +325,9 @@ next:;
       return MaskToTower(field, mask, mapInfo.levels[level].money);
     }
     int mapUse[80];
+    int mapFrozen[80];
     REP(i, 80) { mapUse[i] = 70; }
+    REP(i, 80) { mapFrozen[i] = 10; }
     mapUse[40] = 10;
     mapUse[41] = 10;
     mapUse[42] = 10;
@@ -363,22 +365,26 @@ next:;
     mapUse[71] = 80;
     mapUse[72] = 70;
 
-    static const int offset = 15;
+    if (useCnt != -1) {
+      mapUse[map] = useCnt;
+    }
+    if (useFrozenCnt != -1) {
+      mapFrozen[map] = useFrozenCnt;
+    }
+
     const int h = mapInfo.h;
     const int w = mapInfo.w;
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int bestMask[51][51];
-    int bestDist = CalcBestMask(field, bestMask, mapUse[map] * 2 + offset);
+    int bestDist = CalcBestMask(field, bestMask, mapUse[map]);
     //PrintMask(field, bestMask);
     EraseUneedTower(field, bestMask);
     //PrintMask(field, bestMask);
-    ExpandMask(field, bestMask, mapUse[map] * 2 + offset);
+    ExpandMask(field, bestMask, mapUse[map]);
     //PrintMask(field, bestMask);
     EraseUneedTower(field, bestMask);
     //PrintMask(field, bestMask);
-    if (map > 55) {
-      SetFrozenTower(field, bestMask, 12);
-    }
+    SetFrozenTower(field, bestMask, mapFrozen[map]);
     //PrintMask(field, bestMask);
     Simulation(mapInfo, map, level, bestMask);
     //PrintMask(field, bestMask);

@@ -5,6 +5,43 @@
 #include "RappidPut.h"
 #include "Tron.h"
 
+void AdjustTron(int map) {
+  int best = -100000;
+  int bestUse = -1;
+  int bestFrozen = -1;
+  Simulator simulator[10];
+  REP(iter, 10) {
+    char filename[100];
+    sprintf(filename, "inputs/input%d.txt", iter);
+    simulator[iter].Load(filename);
+  }
+  fprintf(stderr, "Stage:%d\n", map + 1);
+  REP(use, 200) {
+    REP(frozen, 25) {
+      int sum = 0;
+      vector<int> result;
+      REP(iter, 10) {
+        int money = 0;
+        REP(level, 25) {
+          vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level);
+          money += simulator[iter].LevelSimulation(map, level, output).second;
+        }
+        fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
+        sum += money;
+      }
+      sum /= 10;
+      if (sum > best) {
+        best = sum;
+        bestUse = use;
+        bestFrozen = frozen;
+        fprintf(stderr, "Update!!\n");
+        fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", use, frozen, sum);
+      }
+    }
+  }
+  OutputLog("log.txt", "mapUse[%d]=%d;mapFrozen[%d]=%d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
+}
+
 int Test(Simulator &simulator, int map) {
   pair<int, int> result;
   vector<TowerInfo> old;
@@ -32,12 +69,13 @@ int Test(Simulator &simulator, int map) {
 int main() {
   srand(123456789);
 #ifndef CONTEST
-  Simulator simulator("input.txt");
-  int sum = 0;
-  FOR(map, 60, 81 -1) {
-    sum += Test(simulator, map);
-  }
-  printf("TotalMoney: %d\n", sum);
+  AdjustTron(40);
+  //Simulator simulator("inputs/input0.txt");
+  //int sum = 0;
+  //FOR(map, 50, 81 -1) {
+  //  sum += Test(simulator, map);
+  //}
+  //printf("TotalMoney: %d\n", sum);
   return 0;
 #endif
 

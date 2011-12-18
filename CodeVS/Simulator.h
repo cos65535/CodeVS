@@ -201,7 +201,9 @@ next:;
           }
         }
       }
-      if (deadCnt == enemyInfos.size()) { break; }
+      if (deadCnt == enemyInfos.size()) {
+        break;
+      }
 		}
 
     int nstage = stage;

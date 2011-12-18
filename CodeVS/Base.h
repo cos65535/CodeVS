@@ -8,6 +8,7 @@
 #include <iostream>
 #include <math.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <vector>
 #include <queue>
 #include <string>
@@ -27,6 +28,34 @@ static const double PI = acos(-1.0);
 #define FOREQ(i, s, n) for (int i = (s); i <= (int)(n); i++)
 #define FORIT(it, c) for (auto it= (c).begin(); it != (c).end(); it++)
 #define MEMSET(v, h) memset((v), h, sizeof(v))
+
+static int OutputLogVa(const char *filename, const char *format, va_list ap)
+{
+  assert(filename != NULL && filename[0] != '\0');
+	char str[10000];
+	vsnprintf(str, 9999, format, ap);
+	
+	FILE *fp = fopen(filename, "a");
+	if (fp == NULL) {
+		fprintf(stderr, "can\'t open %s\n", filename);
+		return -1;
+	}
+	fprintf(fp, str);
+	fclose(fp);
+
+	return 0;
+}
+
+int OutputLog(const char *filename, const char *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int result = OutputLogVa(filename, format, ap);
+	va_end(ap);
+	return result;
+}
+
+
 
 template<class T>
 T square(T x) { return x * x; }
