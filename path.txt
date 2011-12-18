@@ -1,1 +1,1 @@
-D:\Program\CodeVS\CodeVS\Release\CodeVS.exe
+D:\Program\CodeVS\CodeVS\Contest\CodeVS.exe

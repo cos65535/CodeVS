@@ -5,10 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CodeVS", "CodeVS\CodeVS.vcx
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Contest|Win32 = Contest|Win32
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2772D1A4-6AE7-4B23-9373-D16E606DF4D9}.Contest|Win32.ActiveCfg = Contest|Win32
+		{2772D1A4-6AE7-4B23-9373-D16E606DF4D9}.Contest|Win32.Build.0 = Contest|Win32
 		{2772D1A4-6AE7-4B23-9373-D16E606DF4D9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2772D1A4-6AE7-4B23-9373-D16E606DF4D9}.Debug|Win32.Build.0 = Debug|Win32
 		{2772D1A4-6AE7-4B23-9373-D16E606DF4D9}.Release|Win32.ActiveCfg = Release|Win32
