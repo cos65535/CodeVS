@@ -1,6 +1,9 @@
 #pragma once
 
 #define _CRT_SECURE_NO_WARNINGS
+#define NOMINMAX
+
+#pragma comment (lib, "winmm.lib")
 
 #include <stdio.h>
 #include <string.h>
@@ -15,6 +18,9 @@
 #include <map>
 #include <set>
 #include <list>
+
+#include <Windows.h>
+#include <mmsystem.h>
 
 using namespace std;
 typedef long long ll;

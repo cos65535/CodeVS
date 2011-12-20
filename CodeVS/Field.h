@@ -91,6 +91,8 @@ public:
 		MEMSET(visit, false);
 		MEMSET(dist, 0x0f);
     memset(move, 0x0f, sizeof(int) * 51 * 51);
+		const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+		const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 		while (!que.empty()) {
 			DistPoint p = que.top();
 			que.pop();
@@ -98,8 +100,6 @@ public:
 			visit[p.y][p.x] = true;
 			move[p.y][p.x] = p.dir;
 			REP(dir, 8) {
-			  const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-			  const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
 				int nx = p.x + dx[dir];
 				int ny = p.y + dy[dir];
 				int ndist = p.dist + 2 + dir % 2;
@@ -125,21 +125,22 @@ public:
     }
     int cnt = 0;
     int ret = 1 << 28;
+	  const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+	  const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
     while (!que.empty()) {
       DistPoint p = que.top();
       que.pop();
       if (visit[p.y][p.x]) { continue; }
       visit[p.y][p.x] = true;
       if (field[p.y][p.x] == 's') {
+        return p.dist;
         ret = min(ret, p.dist);
         cnt++;
       }
       REP(dir, 8) {
-			  const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
-			  const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
         int nx = p.x + dx[dir];
         int ny = p.y + dy[dir];
-				int ndist = p.dist + 10 + dir % 2 * 4;
+				int ndist = p.dist + 10 + (dir & 1) * 4;
 				if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
 				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
 				if (dir % 2 == 1) {
@@ -155,7 +156,6 @@ public:
   }
 
   bool dfs(int mask[51][51], bool visit[51][51], int x, int y) const {
-    if (visit[y][x]) { return false; }
     visit[y][x] = true;
     bool ret = field[y][x] == 'g';
     const int dx[4] = { 1, 0, -1, 0 };
@@ -164,6 +164,7 @@ public:
       int nx = x + dx[dir];
       int ny = y + dy[dir];
       if (field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g' || mask[ny][nx] != 0) { continue; }
+      if (visit[ny][nx]) { continue; }
       ret |= dfs(mask, visit, nx, ny);
     }
     return ret;
@@ -171,17 +172,53 @@ public:
 
   bool OK(int mask[51][51], int bx, int by) const {
     if (mask[by][bx] != 0 || field[by][bx] != '0') { return false; }
-    bool visit[51][51];
-    MEMSET(visit, false);
     mask[by][bx] = 1;
-    REP(y, h) {
-      REP(x, w) {
-        if (visit[y][x]) { continue; }
-        if (field[y][x] == 's') {
-          if (!dfs(mask, visit, x, y)) { goto ng; }
+    {
+      int visit = 0;
+      int cnt1 = 0;
+      queue<Point> que;
+      FOREQ(y, by - 1, by + 1) {
+        FOREQ(x, bx - 1, bx + 1) {
+          if ((field[y][x] != '0' && field[y][x] != 's' && field[y][x] != 'g') || mask[y][x] != 0) { continue; }
+          cnt1++;
+          if (que.empty()) {
+            que.push(Point(x, y));
+            visit |= 1 << ((y - by + 1) * 3 + (x - bx + 1));
+          }
+        }
+      }
+      int cnt2 = 0;
+      const int dx[4] = { 1, 0, -1, 0 };
+      const int dy[4] = { 0, 1, 0, -1 };
+      while (!que.empty()) {
+        Point p = que.front();
+        que.pop();
+        cnt2++;
+        REP(dir, 4) {
+          int nx = p.x + dx[dir];
+          int ny = p.y + dy[dir];
+          if (nx < bx - 1 || nx > bx + 1 || ny < by - 1 || ny > by + 1) { continue; }
+          if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+          if (visit & (1 << ((ny - by + 1) * 3 + (nx - bx + 1)))) { continue; }
+          visit |= 1 << ((ny - by + 1) * 3 + (nx - bx + 1));
+          que.push(Point(nx, ny));
+        }
+      }
+      if (cnt1 == cnt2) { goto ok; }
+    }
+    {
+      bool visit[51][51];
+      MEMSET(visit, false);
+      REP(y, h) {
+        REP(x, w) {
+          if (visit[y][x]) { continue; }
+          if (field[y][x] == 's') {
+            if (!dfs(mask, visit, x, y)) { goto ng; }
+          }
         }
       }
     }
+  ok:
     mask[by][bx] = 0;
     return true;
   ng:;
@@ -193,13 +230,13 @@ public:
     int move[51][51];
     CalcMove(mask, move);
     memset(route, 0, sizeof(int) * 51 * 51);
+	  const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+	  const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
     FORIT(it, ss) {
       int x = it->x;
       int y = it->y;
       while (field[y][x] != 'g') {
-        route[y][x]++;
-			  const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
-			  const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+        route[y][x] |= 2;
         int nx = x + dx[move[y][x]];
         int ny = y + dy[move[y][x]];
         x = nx;

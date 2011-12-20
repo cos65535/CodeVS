@@ -38,10 +38,13 @@ struct Simulator {
 		bool alive;
 		Enemy(EnemyInfo info, int index) : info(info), index(index), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
 	};
+
 	vector<MapInfo> stages;
+  int totalTime;
 	Simulator() {;}
 	Simulator(const char *filename) { Load(filename); }
 	void Release() {
+    totalTime = 0;
 		stages.clear();
 	}
 	bool Load(const char *filename) {
@@ -89,6 +92,7 @@ struct Simulator {
 
   //1レベルのシミュレーション
 	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos) {
+    int start = timeGetTime();
 		pair<int, int> ret(0, 0);
 		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
     {
@@ -222,6 +226,8 @@ next:;
       stages[nstage].levels[nlevel].life = stages[stage].levels[level].life + ret.first;
       stages[nstage].levels[nlevel].money = stages[stage].levels[level].money + ret.second;
     }
+    int end = timeGetTime();
+    totalTime += end - start;
 		return ret;
 	}
 };

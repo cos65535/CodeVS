@@ -65,104 +65,6 @@ namespace Tron {
     return use;
   }
 
-  int CalcMask(int iter, const Field &field, int mask[51][51], int useCnt) {
-    int dist = 0;
-    int use = 0;
-    int target = rand() % field.gs.size();
-    memset(mask, 0, sizeof(int) * 51 * 51);
-    //target以外を埋める
-    REP(i, field.gs.size()) {
-      if (i == target) { continue; }
-      REP(dir, 4) {
-        int nx = field.gs[i].x + dx[dir];
-        int ny = field.gs[i].y + dy[dir];
-        Put(field, mask, nx, ny, use);
-      }
-    }
-    if (field.CalcDist(mask) == -1) { return CalcMask(iter, field, mask, useCnt); }
-
-    int px = field.gs[target].x;
-    int py = field.gs[target].y;
-    int ppx = px;
-    int ppy = py;
-    int dir = rand() % 4;
-    int ngCnt = 0;
-    REP(iter2, 2000) {
-      if (use > useCnt) { break; }
-      if (iter < 1200) {
-        dir = (dir + 3) % 4;
-      } else if (iter < 2400) {
-        dir = (dir + 1) % 4;
-      } else {
-      }
-      if (rand() % 100 < (iter % 1200) / 12 + 5) {
-        dir = rand() % 4;
-      }
-      int nx = px + dx[dir];
-      int ny = py + dy[dir];
-      if (field.field[ny][nx] != '0' || mask[ny][nx] != 0) { continue; }
-      if (nx == ppx && ny == ppy) { continue; }
-      bool ng = false;
-      REP(d, 4) {
-        int nnx = px + dx[d];
-        int nny = py + dy[d];
-        if (field.field[nny][nnx] != '0' || mask[nny][nnx] != 0) { continue; }
-        if (nnx == ppx && nny == ppy) { continue; }
-        if (dir == d) { continue; }
-        ng |= !field.OK(mask, nnx, nny);
-        Put(field, mask, nnx, nny, use);
-      }
-      if (ng) {
-        ngCnt++;
-        REP(d, 4) {
-          int nnx = px + dx[d];
-          int nny = py + dy[d];
-          if (mask[nny][nnx]) {
-            use--;
-            mask[nny][nnx] = 0;
-          }
-        }
-        if (ngCnt <= 10) { goto next; }
-      }
-      ngCnt = 0;
-      ppx = px;
-      ppy = py;
-      px = nx;
-      py = ny;
-next:;
-    }
-
-    dist = field.CalcDist(mask);
-    //printf("%d %d\n", dist, use);
-    //REP(y, field.h) {
-    //  REP(x, field.w) {
-    //    if (field.field[y][x] != '0') {
-    //      printf("%c", field.field[y][x]);
-    //    } else if (mask[y][x] != 0) {
-    //      printf("2");
-    //    } else {
-    //      printf(".");
-    //    }
-    //  }
-    //  puts(""); 
-    //}
-    return dist;
-  }
-
-  int CalcBestMask(const Field &field, int bestMask[51][51], int useCnt) {
-    int bestDist = -1;
-    memset(bestMask, 0x0f, sizeof(int) * 51 * 51);
-    REP(iter, 3600) {
-      int mask[51][51];
-      int dist = CalcMask(iter, field, mask, useCnt);
-      // bestを更新
-      if (dist > bestDist) {
-        memcpy(bestMask, mask, sizeof(int) * 51 * 51);
-        bestDist = dist;
-      }
-    }
-    return bestDist;
-  }
 
   int EraseUneedTower(const Field &field, int bestMask[51][51]) {
     int cnt = 0;
@@ -210,6 +112,100 @@ next:;
       use++;
     }
     return use;
+  }
+
+
+  const int ITER_CNT = 3600;
+  int CalcMask(int iter, const Field &field, int mask[51][51], int useCnt) {
+    int dist = 0;
+    int use = 0;
+    int target = rand() % field.gs.size();
+    memset(mask, 0, sizeof(int) * 51 * 51);
+    //target以外を埋める
+    REP(i, field.gs.size()) {
+      if (i == target) { continue; }
+      REP(dir, 4) {
+        int nx = field.gs[i].x + dx[dir];
+        int ny = field.gs[i].y + dy[dir];
+        Put(field, mask, nx, ny, use);
+      }
+    }
+    if (field.CalcDist(mask) == -1) { return CalcMask(iter, field, mask, useCnt); }
+
+    int px = field.gs[target].x;
+    int py = field.gs[target].y;
+    int ppx = px;
+    int ppy = py;
+    int dir = rand() % 4;
+    int checked = 0;
+    REP(iter2, 2000) {
+      if (use > useCnt) { break; }
+      if (iter < ITER_CNT / 3) {
+        dir = (dir + 3) % 4;
+      } else if (iter < ITER_CNT / 3 * 2) {
+        dir = (dir + 1) % 4;
+      } else {
+      }
+      if (rand() % 100 < (iter % (ITER_CNT / 3)) * 100 / (ITER_CNT / 3) + 5) {
+        dir = rand() % 4;
+      }
+      if (checked & (1 << dir)) { continue; }
+      checked |= 1 << dir;
+      int nx = px + dx[dir];
+      int ny = py + dy[dir];
+      if (field.field[ny][nx] != '0' || mask[ny][nx] != 0) { continue; }
+      if (nx == ppx && ny == ppy) { continue; }
+      bool ng = false;
+      REP(d, 4) {
+        int nnx = px + dx[d];
+        int nny = py + dy[d];
+        if (field.field[nny][nnx] != '0' || mask[nny][nnx] != 0) { continue; }
+        if (nnx == ppx && nny == ppy) { continue; }
+        if (dir == d) { continue; }
+        if (!ng) {
+          ng |= !field.OK(mask, nnx, nny);
+        }
+        Put(field, mask, nnx, nny, use);
+      }
+      if (ng) {
+        REP(d, 4) {
+          int nnx = px + dx[d];
+          int nny = py + dy[d];
+          if (mask[nny][nnx]) {
+            use--;
+            mask[nny][nnx] = 0;
+          }
+        }
+        if (checked != 15) { goto next; }
+      }
+      ppx = px;
+      ppy = py;
+      px = nx;
+      py = ny;
+      checked = 0;
+next:;
+    }
+
+    //EraseUneedTower(field, mask);
+    //PrintMask(field, bestMask);
+    //ExpandMask(field, mask, useCnt);
+    dist = field.CalcDist(mask);
+    return dist;
+  }
+
+  int CalcBestMask(const Field &field, int bestMask[51][51], int useCnt) {
+    int bestDist = -1;
+    memset(bestMask, 0x0f, sizeof(int) * 51 * 51);
+    REP(iter, ITER_CNT) {
+      int mask[51][51];
+      int dist = CalcMask(iter, field, mask, useCnt);
+      // bestを更新
+      if (dist > bestDist) {
+        memcpy(bestMask, mask, sizeof(int) * 51 * 51);
+        bestDist = dist;
+      }
+    }
+    return bestDist;
   }
 
   void SetFrozenTower(const Field &field, int bestMask[51][51], int frozenCnt) {
@@ -326,44 +322,112 @@ next:;
     }
     int mapUse[80];
     int mapFrozen[80];
-    REP(i, 80) { mapUse[i] = 70; }
+    REP(i, 80) { mapUse[i] = 150; }
     REP(i, 80) { mapFrozen[i] = 10; }
-    mapUse[40] = 10;
-    mapUse[41] = 10;
-    mapUse[42] = 10;
-    mapUse[43] = 20;
-    mapUse[44] = 20;
-    mapUse[45] = 20;
-    mapUse[46] = 20;
-    mapUse[47] = 33; //!
-    mapUse[48] = 30; //!
-    mapUse[49] = 30; //!
-    mapUse[50] = 40; //!
+    //mapUse[40] = 10;
+    //mapUse[41] = 10;
+    //mapUse[42] = 10;
+    //mapUse[43] = 20;
+    //mapUse[44] = 20;
+    //mapUse[45] = 20;
+    //mapUse[46] = 20;
+    //mapUse[47] = 33; //!
+    //mapUse[48] = 30; //!
+    //mapUse[49] = 30; //!
+    //mapUse[50] = 40; //!
 
-    mapUse[51] = 30;
-    mapUse[52] = 40;
-    mapUse[53] = 32;
-    mapUse[54] = 42;
-    mapUse[55] = 42; //!
-    mapUse[56] = 45; //!
-    mapUse[57] = 51; //!!
-    mapUse[58] = 45;
-    mapUse[59] = 70; //!!
-    mapUse[60] = 51;
+    //mapUse[51] = 30;
+    //mapUse[52] = 40;
+    //mapUse[53] = 32;
+    //mapUse[54] = 42;
+    //mapUse[55] = 42; //!
+    //mapUse[56] = 45; //!
+    //mapUse[57] = 51; //!!
+    //mapUse[58] = 45;
+    //mapUse[59] = 70; //!!
+    //mapUse[60] = 51;
 
-    mapUse[61] = 71; //!!
-    mapUse[62] = 65;
-    mapUse[63] = 50;
-    mapUse[64] = 58;
-    mapUse[65] = 60;
-    mapUse[66] = 65;
-    mapUse[67] = 50;
-    mapUse[68] = 43;
-    mapUse[69] = 65;
-    mapUse[70] = 70;
+    //mapUse[61] = 71; //!!
+    //mapUse[62] = 65;
+    //mapUse[63] = 50;
+    //mapUse[64] = 58;
+    //mapUse[65] = 60;
+    //mapUse[66] = 65;
+    //mapUse[67] = 50;
+    //mapUse[68] = 43;
+    //mapUse[69] = 65;
+    //mapUse[70] = 70;
 
-    mapUse[71] = 80;
-    mapUse[72] = 70;
+    //mapUse[71] = 80;
+    //mapUse[72] = 70;
+
+mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
+mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
+mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
+mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
+mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
+mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
+mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
+mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
+mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
+mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
+mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
+mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
+
+//mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
+//mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
+//mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
+//mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
+//mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
+//mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
+//mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
+//mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
+//mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
+//mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
+//mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
+//mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
+//mapUse[52]= 83;mapFrozen[52]= 1;//Money=3272
+//mapUse[53]= 67;mapFrozen[53]=10;//Money=3327
+//mapUse[54]=170;mapFrozen[54]= 8;//Money=4676
+//mapUse[55]= 64;mapFrozen[55]= 1;//Money=4475
+//mapUse[56]=124;mapFrozen[56]=10;//Money=4134
+//mapUse[57]=129;mapFrozen[57]=13;//Money=5508
+//mapUse[58]= 90;mapFrozen[58]= 3;//Money=4822
+
+//mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
+//mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
+//mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
+//mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
+//mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
+//mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
+//mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
+//mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
+//mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
+//mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
+//mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
+//mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
+//mapUse[52]= 83;mapFrozen[52]= 1;//Money=3272
+//mapUse[53]= 67;mapFrozen[53]=10;//Money=3327
+//mapUse[54]=170;mapFrozen[54]= 8;//Money=4676
+//mapUse[55]= 64;mapFrozen[55]= 1;//Money=4475
+//mapUse[56]=124;mapFrozen[56]=10;//Money=4134
+//mapUse[57]=129;mapFrozen[57]=13;//Money=5508
+//mapUse[58]= 90;mapFrozen[58]= 3;//Money=4822
+//mapUse[59]= 70;mapFrozen[59]=10;//Money=6899
+//mapUse[60]= 97;mapFrozen[60]= 9;//Money=5186
+//mapUse[61]= 93;mapFrozen[61]= 8;//Money=6441
+//mapUse[62]= 80;mapFrozen[62]= 6;//Money=7675
+//mapUse[63]= 92;mapFrozen[63]= 3;//Money=5579
+//mapUse[64]=101;mapFrozen[64]= 0;//Money=6094
+//mapUse[65]=107;mapFrozen[65]=11;//Money=5829
+//mapUse[66]= 83;mapFrozen[66]= 9;//Money=6640
+//mapUse[67]= 68;mapFrozen[67]=13;//Money=5799
+//mapUse[68]= 77;mapFrozen[68]= 6;//Money=4909
+//mapUse[69]=104;mapFrozen[69]=12;//Money=7172
+//mapUse[70]=113;mapFrozen[70]=15;//Money=7590
+//mapUse[71]= 86;mapFrozen[71]=12;//Money=11395
+//mapUse[72]=102;mapFrozen[72]=12;//Money=6071
+//mapUse[73]=101;mapFrozen[73]=10;//Money=11638
 
     if (useCnt != -1) {
       mapUse[map] = useCnt;

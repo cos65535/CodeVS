@@ -16,30 +16,52 @@ void AdjustTron(int map) {
     simulator[iter].Load(filename);
   }
   fprintf(stderr, "Stage:%d\n", map + 1);
-  REP(use, 200) {
-    REP(frozen, 25) {
-      int sum = 0;
-      vector<int> result;
-      REP(iter, 10) {
-        int money = 0;
-        REP(level, 25) {
-          vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level);
-          money += simulator[iter].LevelSimulation(map, level, output).second;
-        }
-        fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
-        sum += money;
+  int upper = 60;
+  FOR(use, 50, upper) {
+    int sum = 0;
+    vector<int> result;
+    REP(iter, 10) {
+      int money = 0;
+      REP(level, 25) {
+        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, use, 0);
+        money += simulator[iter].LevelSimulation(map, level, output).second;
       }
-      sum /= 10;
-      if (sum > best) {
-        best = sum;
-        bestUse = use;
-        bestFrozen = frozen;
-        fprintf(stderr, "Update!!\n");
-        fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", use, frozen, sum);
-      }
+      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
+      sum += money;
+    }
+    sum /= 10;
+    if (sum > best) {
+      upper = use + 30;
+      best = sum;
+      bestUse = use;
+      fprintf(stderr, "Update!!\n");
+      fprintf(stderr, "Use: %d, Money: %d\n\n", use, sum);
     }
   }
-  OutputLog("log.txt", "mapUse[%d]=%d;mapFrozen[%d]=%d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
+  best = -100000;
+  upper = 20;
+  REP(frozen, upper) {
+    int sum = 0;
+    vector<int> result;
+    REP(iter, 10) {
+      int money = 0;
+      REP(level, 25) {
+        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, bestUse, frozen);
+        money += simulator[iter].LevelSimulation(map, level, output).second;
+      }
+      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
+      sum += money;
+    }
+    sum /= 10;
+    if (sum > best) {
+      upper = frozen + 20;
+      best = sum;
+      bestFrozen = frozen;
+      fprintf(stderr, "Update!!\n");
+      fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", bestUse, frozen, sum);
+    }
+  }
+  OutputLog("log.txt", "mapUse[%d]=%3d;mapFrozen[%d]=%2d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
 }
 
 int Test(Simulator &simulator, int map) {
@@ -68,14 +90,22 @@ int Test(Simulator &simulator, int map) {
 
 int main() {
   srand(123456789);
+  Simulator simulator("inputs/input0.txt");
 #ifndef CONTEST
-  AdjustTron(40);
-  //Simulator simulator("inputs/input0.txt");
-  //int sum = 0;
-  //FOR(map, 50, 81 -1) {
-  //  sum += Test(simulator, map);
+  int start = timeGetTime();
+  //FOR(map, 59, 80) {
+  //  AdjustTron(map);
   //}
-  //printf("TotalMoney: %d\n", sum);
+  int sum = 0;
+  FOR(map, 0, 81 -1) {
+    sum += Test(simulator, map);
+  }
+  printf("TotalMoney: %d\n", sum);
+  printf("Simulation Time: %d\n", simulator.totalTime);
+  int end = timeGetTime();
+  printf("Total Time: %d\n", end - start);
+  puts("Please Enter Key");
+  getchar();
   return 0;
 #endif
 
@@ -87,6 +117,7 @@ int main() {
   REP(map, mapCnt) {
     MapInfo mapInfo;
     mapInfo.LoadHeader(stdin);
+    memcpy(simulator.stages[map].field, mapInfo.field, sizeof(int) * 51 * 51);
     REP(level, mapInfo.levelCnt) {
       mapInfo.LoadLevel(stdin);
 
