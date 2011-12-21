@@ -121,7 +121,9 @@ struct Simulator {
         }
       }
     }
-		int index = 0;
+
+    int index = 0;
+    int deadCnt = 0;
     for (int frame = 0; frame < (1 << 30); frame++) {
       //ˆÚ“®‚³‚¹‚é
 			const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
@@ -145,9 +147,9 @@ struct Simulator {
 			}
 
       //ƒ^ƒ[‚Ìˆ—
-      FORIT(it1, towers) {
-        FORIT(it2, enemys) {
-          if (!it2->alive) { continue; }
+      FORIT(it2, enemys) {
+        if (!it2->alive || it2->charge != 0) { continue; }
+        FORIT(it1, towers) {
           int d = square(it1->x - it2->x) + square(it1->y - it2->y);
           bool in = d <= it1->Range2();
           FORIT(it3, it1->target) {
@@ -163,7 +165,9 @@ struct Simulator {
           }
 next:;
         }
+      }
 
+      FORIT(it1, towers) {
         //’e‚ðŒ‚‚Ä‚é‚È‚çŒ‚‚Â
         if (it1->charge < 0 && !it1->target.empty()) {
           int target = it1->target.front();
@@ -177,11 +181,10 @@ next:;
       }
 
       //“G‚ªŽ€–S‚µ‚Ä‚é‚©‚Ç‚¤‚©‚ÆƒS[ƒ‹‚É‚½‚Ç‚è’…‚¢‚Ä‚é‚©‚Ç‚¤‚©‚ðŠm”F
-      int deadCnt = 0;
       FORIT(it1, enemys) {
-        bool palive = it1->alive;
+        if (!it1->alive) { continue; }
         if (it1->life <= 0) {
-          if (it1->alive && stage < 40) {
+          if (stage < 40) {
             int money = (it1->info.life - (frame - it1->info.t)) / 10;
             ret.second += money;
           }
@@ -193,7 +196,7 @@ next:;
           deadCnt++;
           it1->alive = false;
         }
-        if (palive != it1->alive) {
+        if (!it1->alive) {
           FORIT(it2, towers) {
             FORIT(it3, it2->target) {
               if (*it3 == it1->index) {
