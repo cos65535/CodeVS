@@ -14,6 +14,7 @@ struct TowerInfo {
 		int mo[3] = { 10, 15, 20 };
 		return mo[type] * (level + 1) * (level + 2) / 2;
 	}
+  bool operator<(const TowerInfo &rhs) const { return false; }
 };
 
 struct EnemyInfo {

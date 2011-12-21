@@ -98,6 +98,7 @@ int main() {
   //}
   int sum = 0;
   FOR(map, 0, 81 -1) {
+    if (map == 41) { sum /= 2; }
     sum += Test(simulator, map);
   }
   printf("TotalMoney: %d\n", sum);
@@ -123,18 +124,18 @@ int main() {
 
       //fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
       //fprintf(stderr, "Ans:%d %d\n", plife - mapInfo.levels.back().life, mapInfo.levels.back().money - pmoney);
-      //if (map != 40 && level == 0) {
+      //if (map != 40 || level != 0) {
       //  assert(plife - ans.first == mapInfo.levels.back().life);
-      //  assert(pmoney + ans.second == mapInfo.levels.back().money);
+      //  assert(pmoney + ans.second == mapInfo.levels[level].money);
       //}
       //plife = mapInfo.levels.back().life;
       //pmoney = mapInfo.levels.back().money;
 
       vector<TowerInfo> output;
       if (map < 40) {
-        output = RappidPut(mapInfo, map, level);
+        output = RappidPut(simulator.stages[map], map, level);
       } else {
-        output = Tron::TronAI(mapInfo, map, level);
+        output = Tron::TronAI(simulator.stages[map], map, level);
       }
 
       // Print
@@ -144,7 +145,7 @@ int main() {
       }
       fflush(stdout);
 
-      //ans = simulator.LevelSimulation(map, level, output, mapInfo.levels[level].tower);
+      //ans = simulator.LevelSimulation(map, level, output);
       //fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }

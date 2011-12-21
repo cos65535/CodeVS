@@ -11,7 +11,7 @@ struct Simulator {
 		int level;
 		int type;
 		int charge;
-		list<int> target;
+		vector<int> target;
 		Tower(TowerInfo info) : x(info.x), y(info.y), level(info.level), type(info.type), charge(0) {;}
 		int Attack() const {
 			int at[3] = { 10, 20, 3 };
@@ -40,11 +40,10 @@ struct Simulator {
 	};
 
 	vector<MapInfo> stages;
-  int totalTime;
+  static int totalTime;
 	Simulator() {;}
 	Simulator(const char *filename) { Load(filename); }
 	void Release() {
-    totalTime = 0;
 		stages.clear();
 	}
 	bool Load(const char *filename) {
@@ -80,9 +79,9 @@ struct Simulator {
 		REP(i, stages[stage].levels.size()) {
 			pair<int, int> nret;
       if (i == 0) {
-        LevelSimulation(stage, i, towers);
+        nret = LevelSimulation(stage, i, towers);
       } else {
-        LevelSimulation(stage, i, nothing);
+        nret = LevelSimulation(stage, i, nothing);
       }
 			ret.first += nret.first;
 			ret.second += nret.second;
@@ -231,3 +230,4 @@ next:;
 		return ret;
 	}
 };
+int Simulator::totalTime = 0;
