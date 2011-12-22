@@ -72,6 +72,29 @@ struct Simulator {
   //  stages[map].Print();
   //}
 
+  static pair<int, int> MapSimulation(const MapInfo &mapInfo, int stage, const vector<TowerInfo> &towers) {
+    Simulator simulator;
+    if (stage >= 40) {
+      simulator.stages.resize(40);
+      stage = 40;
+    } else {
+      stage = 0;
+    }
+    simulator.stages.push_back(mapInfo);
+    return simulator.MapSimulation(stage, towers);
+  }
+  //static pair<int, int> LevelSimulation(const MapInfo &mapInfo, int stage, int level, const vector<TowerInfo> &towers) {
+  //  Simulator simulator;
+  //  if (stage >= 40) {
+  //    simulator.stages.resize(40);
+  //    stage = 40;
+  //  } else {
+  //    stage = 0;
+  //  }
+  //  simulator.stages.push_back(mapInfo);
+  //  return simulator.LevelSimulation(stage, level, towers);
+  //}
+
   //1マップのシミューレーション
 	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers) {
     vector<TowerInfo> nothing;
@@ -225,7 +248,7 @@ next:;
           stages[nstage].levels[nlevel].tower.push_back(*it);
         }
       }
-      stages[nstage].levels[nlevel].life = stages[stage].levels[level].life + ret.first;
+      stages[nstage].levels[nlevel].life = stages[stage].levels[level].life - ret.first;
       stages[nstage].levels[nlevel].money = stages[stage].levels[level].money + ret.second;
     }
     int end = timeGetTime();

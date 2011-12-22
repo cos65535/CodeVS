@@ -333,7 +333,7 @@ next:;
     }
   }
 
-  int Simulation(MapInfo mapInfo, const int map, int mask[51][51], int best) {
+  int Simulation(const MapInfo &mapInfo, const int map, int mask[51][51], int best) {
     const int w = mapInfo.w;
     const int h = mapInfo.h;
     Simulator simulator;
@@ -399,7 +399,7 @@ next:;
     field = Field(mapInfo.field, w, h);
     vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[0].money);
     pair<int, int> ans = simulator.MapSimulation(40, tower);
-    ans.second += -ans.first * 1000;
+    ans.second += -ans.first * 5000;
     return ans.second;
   }
 
@@ -459,61 +459,6 @@ mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
 mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
 mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
 
-//mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
-//mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
-//mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
-//mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
-//mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
-//mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
-//mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
-//mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
-//mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
-//mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
-//mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
-//mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
-//mapUse[52]= 83;mapFrozen[52]= 1;//Money=3272
-//mapUse[53]= 67;mapFrozen[53]=10;//Money=3327
-//mapUse[54]=170;mapFrozen[54]= 8;//Money=4676
-//mapUse[55]= 64;mapFrozen[55]= 1;//Money=4475
-//mapUse[56]=124;mapFrozen[56]=10;//Money=4134
-//mapUse[57]=129;mapFrozen[57]=13;//Money=5508
-//mapUse[58]= 90;mapFrozen[58]= 3;//Money=4822
-
-//mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
-//mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
-//mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
-//mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
-//mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
-//mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
-//mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
-//mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
-//mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
-//mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
-//mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
-//mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
-//mapUse[52]= 83;mapFrozen[52]= 1;//Money=3272
-//mapUse[53]= 67;mapFrozen[53]=10;//Money=3327
-//mapUse[54]=170;mapFrozen[54]= 8;//Money=4676
-//mapUse[55]= 64;mapFrozen[55]= 1;//Money=4475
-//mapUse[56]=124;mapFrozen[56]=10;//Money=4134
-//mapUse[57]=129;mapFrozen[57]=13;//Money=5508
-//mapUse[58]= 90;mapFrozen[58]= 3;//Money=4822
-//mapUse[59]= 70;mapFrozen[59]=10;//Money=6899
-//mapUse[60]= 97;mapFrozen[60]= 9;//Money=5186
-//mapUse[61]= 93;mapFrozen[61]= 8;//Money=6441
-//mapUse[62]= 80;mapFrozen[62]= 6;//Money=7675
-//mapUse[63]= 92;mapFrozen[63]= 3;//Money=5579
-//mapUse[64]=101;mapFrozen[64]= 0;//Money=6094
-//mapUse[65]=107;mapFrozen[65]=11;//Money=5829
-//mapUse[66]= 83;mapFrozen[66]= 9;//Money=6640
-//mapUse[67]= 68;mapFrozen[67]=13;//Money=5799
-//mapUse[68]= 77;mapFrozen[68]= 6;//Money=4909
-//mapUse[69]=104;mapFrozen[69]=12;//Money=7172
-//mapUse[70]=113;mapFrozen[70]=15;//Money=7590
-//mapUse[71]= 86;mapFrozen[71]=12;//Money=11395
-//mapUse[72]=102;mapFrozen[72]=12;//Money=6071
-//mapUse[73]=101;mapFrozen[73]=10;//Money=11638
-
     if (useCnt != -1) {
       mapUse[map] = useCnt;
     }
@@ -567,6 +512,42 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     return ans[0].second;
   }
 
+  vector<TowerInfo> LifeToMoney(const MapInfo &mapInfo, const int map, const vector<TowerInfo> iniTowers, int iniMoney) {
+    //assert(Simulator::MapSimulation(mapInfo, map, iniTowers).first == 0);
+    if (mapInfo.levels[0].life == 1 || map < 60) { return iniTowers; }
+    vector<int> iniTarget;
+    REP(i, iniTowers.size()) {
+      if (iniTowers[i].type == 0 && iniTowers[i].level == 4) {
+        iniTarget.push_back(i);
+      }
+    }
+    if (iniTarget.size() < 6) { return iniTowers; }
+    int best = iniMoney + 300;
+    const int ITER_CNT = 200;
+    vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT);
+    FORIT(it, ans) { *it = make_pair(best, iniTowers); }
+    ans.push_back(make_pair(best, iniTowers));
+#pragma omp parallel for
+    REP(iter, ITER_CNT) {
+      vector<TowerInfo> towers = iniTowers;
+      vector<int> target = iniTarget;
+      random_shuffle(target.begin(), target.end());
+      REP(i, target.size()) {
+        towers[target[i]].level = 0;
+        if ((i + 1) * 90 + iniMoney > best) {
+          pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers);
+          if (result.first > 1) { break; }
+          if (result.second > best) {
+            best = result.second;
+            ans[iter] = make_pair(result.second, towers);
+          }
+        }
+      }
+    }
+    sort(ans.rbegin(), ans.rend());
+    return ans[0].second;
+  }
+
   vector<TowerInfo> ReplayAttack(const MapInfo &mapInfo, const int map, const int level) {
     if (level != 0) { return vector<TowerInfo>(); }
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
@@ -578,29 +559,22 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     int best = -15000;
     int upper = (int)answer.size();
     vector<pair<int, vector<TowerInfo> > > ans(upper * 2);
-    REP(i, upper * 2) { ans[i].first = -15000; }
+    REP(i, upper * 2) { ans[i].first = -150000; }
 #pragma omp parallel for
     for (int i = 0; i < upper; i++) {
-      //EraseUneedTower(field, answer[i].mask);
+      if (answer[i].money <= best) { continue; }
       MaskInfo temp = answer[i];
       int money = Simulation(mapInfo, map, answer[i].mask, best);
       best = max(best, money);
       ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
 
-      //ExpandMask(field, temp.mask, 200);
       SetFrozenTower(field, temp.mask, 10);
       money = Simulation(mapInfo, map, temp.mask, best);
       ans[i + upper] = make_pair(money, MaskToTower(field, temp.mask, mapInfo.levels[0].money));
     }
-    //if (map >= 69) {
-    //  vector<TowerInfo> towers = TronAI(mapInfo, map, level, false);
-    //  int money = 0;
-    //  FORIT(it, towers) {
-    //    money -= it->Money();
-    //  }
-    //  ans.push_back(make_pair(money, towers));
-    //}
     sort(ans.rbegin(), ans.rend());
-    return ans[0].second;
+
+    //return ans[0].second;
+    return LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
   }
 };

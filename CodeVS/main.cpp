@@ -74,8 +74,8 @@ int Test(Simulator &simulator, int map) {
     if (map < 40) {
       output = RappidPut(simulator.stages[map], map, level);
     } else {
-      output = Tron::TronAI(simulator.stages[map], map, level, true);
-//      output = Tron::ReplayAttack(simulator.stages[map], map, level);
+//      output = Tron::TronAI(simulator.stages[map], map, level, true);
+      output = Tron::ReplayAttack(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -94,18 +94,23 @@ int main() {
   Simulator simulator("inputs/input.txt");
 #ifndef CONTEST
   int start = timeGetTime();
-  FOR(iter, 10, 20) {
-    int sum = 0;
-    char filename[100];
-    sprintf(filename, "inputs/input%d.txt", iter);
-    Simulator simulator(filename);
-    FOR(map, 0, 81 -1) {
-      if (map == 40) { sum /= 2; }
-      sum += Test(simulator, map);
-      printf("TotalMoney: %d\n", sum);
-    }
-    //printf("TotalMoney: %d\n", sum);
+  int sum = 0;
+  FOR(map, 0, 81 -1) {
+    if (map == 40) { sum /= 2; }
+    sum += Test(simulator, map);
+    printf("TotalMoney: %d\n", sum);
   }
+  //FOR(iter, 10, 20) {
+  //  int sum = 0;
+  //  char filename[100];
+  //  sprintf(filename, "inputs/input%d.txt", iter);
+  //  Simulator simulator(filename);
+  //  FOR(map, 0, 81 -1) {
+  //    if (map == 40) { sum /= 2; }
+  //    sum += Test(simulator, map);
+  //    printf("TotalMoney: %d\n", sum);
+  //  }
+  //}
   //printf("Simulation Time: %d.%d\n", simulator.totalTime);
   int end = timeGetTime();
   printf("Total Time: %d\n", end - start);
@@ -125,6 +130,8 @@ int main() {
     memcpy(simulator.stages[map].field, mapInfo.field, sizeof(int) * 51 * 51);
     REP(level, mapInfo.levelCnt) {
       mapInfo.LoadLevel(stdin);
+      //assert(mapInfo.levels[level].life == simulator.stages[map].levels[level].life);
+      //assert(mapInfo.levels[level].money == simulator.stages[map].levels[level].money);
 
       //fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
       //fprintf(stderr, "Ans:%d %d\n", plife - mapInfo.levels.back().life, mapInfo.levels.back().money - pmoney);
@@ -148,8 +155,8 @@ int main() {
         printf("%d %d %d %d\n", it->x, it->y, it->level, it->type);
       }
       fflush(stdout);
+      ans = simulator.LevelSimulation(map, level, output);
 
-      //ans = simulator.LevelSimulation(map, level, output);
       //fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }
