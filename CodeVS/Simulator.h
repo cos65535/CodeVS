@@ -40,7 +40,7 @@ struct Simulator {
 	};
 
 	vector<MapInfo> stages;
-  static int totalTime;
+  //static int totalTime;
 	Simulator() {;}
 	Simulator(const char *filename) { Load(filename); }
 	void Release() {
@@ -229,8 +229,8 @@ next:;
       stages[nstage].levels[nlevel].money = stages[stage].levels[level].money + ret.second;
     }
     int end = timeGetTime();
-    totalTime += end - start;
+    //totalTime += end - start;
 		return ret;
 	}
 };
-int Simulator::totalTime = 0;
+//int Simulator::totalTime = 0;

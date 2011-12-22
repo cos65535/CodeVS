@@ -155,7 +155,7 @@ public:
     return ret;
   }
 
-  bool dfs(int mask[51][51], bool visit[51][51], int x, int y) const {
+  bool dfs(const int mask[51][51], bool visit[51][51], int x, int y) const {
     visit[y][x] = true;
     bool ret = field[y][x] == 'g';
     const int dx[4] = { 1, 0, -1, 0 };
@@ -168,6 +168,20 @@ public:
       ret |= dfs(mask, visit, nx, ny);
     }
     return ret;
+  }
+
+  bool OK2(const int mask[51][51]) const {
+    bool visit[51][51];
+    MEMSET(visit, false);
+    REP(y, h) {
+      REP(x, w) {
+        if (visit[y][x]) { continue; }
+        if (field[y][x] == 's') {
+          if (!dfs(mask, visit, x, y)) { return false; }
+        }
+      }
+    }
+    return true;
   }
 
   bool OK(int mask[51][51], int bx, int by) const {
@@ -206,18 +220,7 @@ public:
       }
       if (cnt1 == cnt2) { goto ok; }
     }
-    {
-      bool visit[51][51];
-      MEMSET(visit, false);
-      REP(y, h) {
-        REP(x, w) {
-          if (visit[y][x]) { continue; }
-          if (field[y][x] == 's') {
-            if (!dfs(mask, visit, x, y)) { goto ng; }
-          }
-        }
-      }
-    }
+    if (!OK2(mask)) { goto ng; }
   ok:
     mask[by][bx] = 0;
     return true;

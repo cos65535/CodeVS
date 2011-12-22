@@ -23,7 +23,7 @@ void AdjustTron(int map) {
     REP(iter, 10) {
       int money = 0;
       REP(level, 25) {
-        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, use, 0);
+        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, use, 0);
         money += simulator[iter].LevelSimulation(map, level, output).second;
       }
       //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
@@ -46,7 +46,7 @@ void AdjustTron(int map) {
     REP(iter, 10) {
       int money = 0;
       REP(level, 25) {
-        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, bestUse, frozen);
+        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, bestUse, frozen);
         money += simulator[iter].LevelSimulation(map, level, output).second;
       }
       //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
@@ -74,7 +74,8 @@ int Test(Simulator &simulator, int map) {
     if (map < 40) {
       output = RappidPut(simulator.stages[map], map, level);
     } else {
-      output = Tron::TronAI(simulator.stages[map], map, level);
+//      output = Tron::TronAI(simulator.stages[map], map, level, true);
+      output = Tron::ReplayAttack(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -90,19 +91,25 @@ int Test(Simulator &simulator, int map) {
 
 int main() {
   srand(123456789);
-  Simulator simulator("inputs/input0.txt");
+  Simulator simulator("inputs/input10.txt");
 #ifndef CONTEST
   int start = timeGetTime();
   //FOR(map, 59, 80) {
   //  AdjustTron(map);
   //}
-  int sum = 0;
-  FOR(map, 0, 81 -1) {
-    if (map == 41) { sum /= 2; }
-    sum += Test(simulator, map);
-  }
-  printf("TotalMoney: %d\n", sum);
-  printf("Simulation Time: %d\n", simulator.totalTime);
+  //FOR(iter, 0, 10) {
+    int sum = 0;
+    //char filename[100];
+    //sprintf(filename, "inputs/input%d.txt", iter);
+    //Simulator simulator(filename);
+    FOR(map, 0, 81 -1) {
+      if (map == 40) { sum /= 2; }
+      sum += Test(simulator, map);
+      printf("TotalMoney: %d\n", sum);
+    }
+    //printf("TotalMoney: %d\n", sum);
+  //}
+  //printf("Simulation Time: %d.%d\n", simulator.totalTime);
   int end = timeGetTime();
   printf("Total Time: %d\n", end - start);
   puts("Please Enter Key");
@@ -135,7 +142,7 @@ int main() {
       if (map < 40) {
         output = RappidPut(simulator.stages[map], map, level);
       } else {
-        output = Tron::TronAI(simulator.stages[map], map, level);
+        output = Tron::ReplayAttack(simulator.stages[map], map, level);
       }
 
       // Print

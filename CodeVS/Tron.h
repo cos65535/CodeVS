@@ -41,11 +41,74 @@ namespace Tron {
     }
   }
 
+  void SaveMask(const char *filename, const MapInfo &mapInfo, const vector<TowerInfo> &towers, int money) {
+    Field field(mapInfo.field, mapInfo.w, mapInfo.h);
+    field.PutTower(towers);
+    FILE *fp = fopen(filename, "a");
+    assert(fp != NULL);
+    fprintf(fp, "%d\n", money);
+    REP(y, field.h) {
+      REP(x, field.w) {
+        int type = field.field[y][x] / 1000 - 1;
+        int level = field.field[y][x] % 1000 / 100 - 1;
+        if (field.field[y][x] == '1') { type = 0; level = 0; }
+        if (type < 0) {
+          fprintf(fp, "0 ");
+        } else {
+          fprintf(fp, "%d ", (type + 1) * 10 + level + 1);
+        }
+      }
+      fprintf(fp, "\n");
+    }
+    fprintf(fp, "\n");
+    fclose(fp);
+  }
+
+  struct MaskInfo {
+    int money;
+    int mask[51][51];
+    MaskInfo() {;}
+    MaskInfo(const MaskInfo &rhs) {
+      money = rhs.money;
+      memcpy(mask, rhs.mask, sizeof(int) * 51 * 51);
+    }
+    MaskInfo &operator=(const MaskInfo &rhs) {
+      money = rhs.money;
+      memcpy(mask, rhs.mask, sizeof(int) * 51 * 51);
+      return *this;
+    }
+    bool operator<(const MaskInfo &rhs) const { return money < rhs.money; }
+  };
+  vector<MaskInfo> LoadMasks(const char *filename, const MapInfo &mapInfo) {
+    Field field(mapInfo.field, mapInfo.w, mapInfo.h);
+    int h = mapInfo.h;
+    int w = mapInfo.w;
+    FILE *fp = fopen(filename, "r");
+    assert(fp != NULL);
+    vector<MaskInfo> ret;
+    int money;
+    while (fscanf(fp, "%d", &money) > 0) {
+      MaskInfo info;
+      info.money = money;
+      REP(y, h) {
+        REP(x, w) {
+          fscanf(fp, "%d", &info.mask[y][x]);
+        }
+      }
+      if (field.OK2(info.mask)) {
+        ret.push_back(info);
+      }
+    }
+    sort(ret.begin(), ret.end());
+    return ret;
+  }
+
   vector<TowerInfo> MaskToTower(const Field &field, const int mask[51][51], int money) {
     vector<TowerInfo> ret;
     REP(y, field.h) {
       REP(x, field.w) {
         if (field.field[y][x] >= 1500) { continue; }
+        if (field.field[y][x] == '1' || field.field[y][x] == 's' || field.field[y][x] == 'g') { continue; }
         int type = mask[y][x] / 10 - 1;
         int level = mask[y][x] % 10 - 1;
         if (type >= 0) {
@@ -304,7 +367,7 @@ next:;
     while (true) {
       vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[0].money);
       pair<int, int> ans = simulator.LevelSimulation(40, lastLevel, tower);
-      if ((lastLevel == 24 && ans.first == 0) || ret + ans.second < best) { return ret + ans.second; }
+      if ((lastLevel == 24 && ans.first == 0) || ret + ans.second < best) { break; }
       if (ans.first == 0) {
         lastLevel++;
         ret += ans.second;
@@ -333,10 +396,14 @@ next:;
       }
       //PrintMask(field, mask);
     }
-    return 1 << 20;
+    field = Field(mapInfo.field, w, h);
+    vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[0].money);
+    pair<int, int> ans = simulator.MapSimulation(40, tower);
+    ans.second += -ans.first * 1000;
+    return ans.second;
   }
 
-  vector<TowerInfo> TronAI(const MapInfo &mapInfo, const int map, const int level, int useCnt = -1, int useFrozenCnt = -1) {
+  vector<TowerInfo> TronAI(const MapInfo &mapInfo, const int map, const int level, bool save, int useCnt = -1, int useFrozenCnt = -1) {
     if (level != 0) { return vector<TowerInfo>(); }
     int mapUse[80];
     int mapFrozen[80];
@@ -459,19 +526,20 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int best = -15000;
     vector<pair<int, vector<TowerInfo> > > ans;
-    const int ITER_CNT = 40;
+    const int ITER_CNT = 400;
     ans.resize(ITER_CNT);
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
+      int useCnt = mapUse[map] + rand() % 101 - 50;
       int bestMask[51][51];
       int t1 = timeGetTime();
-      CalcBestMask(field, bestMask, mapUse[map]);
+      CalcBestMask(field, bestMask, useCnt);
       //PrintMask(field, bestMask);
       int t2 = timeGetTime();
       EraseUneedTower(field, bestMask);
       //PrintMask(field, bestMask);
       int t3 = timeGetTime();
-      ExpandMask(field, bestMask, mapUse[map]);
+      ExpandMask(field, bestMask, useCnt);
       //PrintMask(field, bestMask);
       int t4 = timeGetTime();
       EraseUneedTower(field, bestMask);
@@ -482,17 +550,57 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       int t6 = timeGetTime();
       int money = Simulation(mapInfo, map, bestMask, best);
       int t7 = timeGetTime();
-      //printf("%d %d %d %d %d %d\n", t2 - t1, t3 - t2, t4 - t3, t5 - t4, t6 - t5, t7 - t6);
+      //fprintf(stderr, "%d %d %d %d %d %d\n", t2 - t1, t3 - t2, t4 - t3, t5 - t4, t6 - t5, t7 - t6);
       //PrintMask(field, bestMask);
       ans[iter] = make_pair(money, MaskToTower(field, bestMask, mapInfo.levels[0].money));
       best = max(best, money);
-      //if (money > best) {
-      //best = money;
-      //ans = MaskToTower(field, bestMask, mapInfo.levels[0].money);
-      //}
     }
     sort(ans.rbegin(), ans.rend());
+    if (save) {
+      REP(i, min((int)ans.size(), 20)) {
+        char filename[100];
+        sprintf(filename, "replay/%02d.txt", map);
+        SaveMask(filename, mapInfo, ans[i].second, ans[i].first);
+      }
+    }
 
     return ans[0].second;
   }
-}
+
+  vector<TowerInfo> ReplayAttack(const MapInfo &mapInfo, const int map, const int level) {
+    if (level != 0) { return vector<TowerInfo>(); }
+    Field field(mapInfo.field, mapInfo.w, mapInfo.h);
+    char filename[100];
+    sprintf(filename, "replay/%02d.txt", map);
+    vector<MaskInfo> answer = LoadMasks(filename, mapInfo);
+    if (answer.size() == 0) { return TronAI(mapInfo, map, level, false); }
+    //fprintf(stderr, "Size: %d\n", answer.size());
+    int best = -15000;
+    int upper = (int)answer.size();
+    vector<pair<int, vector<TowerInfo> > > ans(upper * 2);
+    REP(i, upper * 2) { ans[i].first = -15000; }
+#pragma omp parallel for
+    for (int i = 0; i < upper; i++) {
+      //EraseUneedTower(field, answer[i].mask);
+      MaskInfo temp = answer[i];
+      int money = Simulation(mapInfo, map, answer[i].mask, best);
+      best = max(best, money);
+      ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
+
+      //ExpandMask(field, temp.mask, 200);
+      SetFrozenTower(field, temp.mask, 10);
+      money = Simulation(mapInfo, map, temp.mask, best);
+      ans[i + upper] = make_pair(money, MaskToTower(field, temp.mask, mapInfo.levels[0].money));
+    }
+    //if (map >= 69) {
+    //  vector<TowerInfo> towers = TronAI(mapInfo, map, level, false);
+    //  int money = 0;
+    //  FORIT(it, towers) {
+    //    money -= it->Money();
+    //  }
+    //  ans.push_back(make_pair(money, towers));
+    //}
+    sort(ans.rbegin(), ans.rend());
+    return ans[0].second;
+  }
+};
