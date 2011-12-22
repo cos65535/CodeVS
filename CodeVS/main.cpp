@@ -5,64 +5,64 @@
 #include "RappidPut.h"
 #include "Tron.h"
 
-void AdjustTron(int map) {
-  int best = -100000;
-  int bestUse = -1;
-  int bestFrozen = -1;
-  Simulator simulator[10];
-  REP(iter, 10) {
-    char filename[100];
-    sprintf(filename, "inputs/input%d.txt", iter);
-    simulator[iter].Load(filename);
-  }
-  fprintf(stderr, "Stage:%d\n", map + 1);
-  int upper = 60;
-  FOR(use, 50, upper) {
-    int sum = 0;
-    vector<int> result;
-    REP(iter, 10) {
-      int money = 0;
-      REP(level, 25) {
-        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, use, 0);
-        money += simulator[iter].LevelSimulation(map, level, output).second;
-      }
-      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
-      sum += money;
-    }
-    sum /= 10;
-    if (sum > best) {
-      upper = use + 30;
-      best = sum;
-      bestUse = use;
-      fprintf(stderr, "Update!!\n");
-      fprintf(stderr, "Use: %d, Money: %d\n\n", use, sum);
-    }
-  }
-  best = -100000;
-  upper = 20;
-  REP(frozen, upper) {
-    int sum = 0;
-    vector<int> result;
-    REP(iter, 10) {
-      int money = 0;
-      REP(level, 25) {
-        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, bestUse, frozen);
-        money += simulator[iter].LevelSimulation(map, level, output).second;
-      }
-      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
-      sum += money;
-    }
-    sum /= 10;
-    if (sum > best) {
-      upper = frozen + 20;
-      best = sum;
-      bestFrozen = frozen;
-      fprintf(stderr, "Update!!\n");
-      fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", bestUse, frozen, sum);
-    }
-  }
-  OutputLog("log.txt", "mapUse[%d]=%3d;mapFrozen[%d]=%2d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
-}
+//void AdjustTron(int map) {
+//  int best = -100000;
+//  int bestUse = -1;
+//  int bestFrozen = -1;
+//  Simulator simulator[10];
+//  REP(iter, 10) {
+//    char filename[100];
+//    sprintf(filename, "inputs/input%d.txt", iter);
+//    simulator[iter].Load(filename);
+//  }
+//  fprintf(stderr, "Stage:%d\n", map + 1);
+//  int upper = 60;
+//  FOR(use, 50, upper) {
+//    int sum = 0;
+//    vector<int> result;
+//    REP(iter, 10) {
+//      int money = 0;
+//      REP(level, 25) {
+//        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, use, 0);
+//        money += simulator[iter].LevelSimulation(map, level, output).second;
+//      }
+//      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
+//      sum += money;
+//    }
+//    sum /= 10;
+//    if (sum > best) {
+//      upper = use + 30;
+//      best = sum;
+//      bestUse = use;
+//      fprintf(stderr, "Update!!\n");
+//      fprintf(stderr, "Use: %d, Money: %d\n\n", use, sum);
+//    }
+//  }
+//  best = -100000;
+//  upper = 20;
+//  REP(frozen, upper) {
+//    int sum = 0;
+//    vector<int> result;
+//    REP(iter, 10) {
+//      int money = 0;
+//      REP(level, 25) {
+//        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, bestUse, frozen);
+//        money += simulator[iter].LevelSimulation(map, level, output).second;
+//      }
+//      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
+//      sum += money;
+//    }
+//    sum /= 10;
+//    if (sum > best) {
+//      upper = frozen + 20;
+//      best = sum;
+//      bestFrozen = frozen;
+//      fprintf(stderr, "Update!!\n");
+//      fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", bestUse, frozen, sum);
+//    }
+//  }
+//  OutputLog("log.txt", "mapUse[%d]=%3d;mapFrozen[%d]=%2d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
+//}
 
 int Test(Simulator &simulator, int map) {
   pair<int, int> result;
@@ -74,8 +74,8 @@ int Test(Simulator &simulator, int map) {
     if (map < 40) {
       output = RappidPut(simulator.stages[map], map, level);
     } else {
-//      output = Tron::TronAI(simulator.stages[map], map, level, true);
-      output = Tron::ReplayAttack(simulator.stages[map], map, level);
+      output = Tron::TronAI(simulator.stages[map], map, level, true);
+//      output = Tron::ReplayAttack(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -91,24 +91,21 @@ int Test(Simulator &simulator, int map) {
 
 int main() {
   srand(123456789);
-  Simulator simulator("inputs/input10.txt");
+  Simulator simulator("inputs/input.txt");
 #ifndef CONTEST
   int start = timeGetTime();
-  //FOR(map, 59, 80) {
-  //  AdjustTron(map);
-  //}
-  //FOR(iter, 0, 10) {
+  FOR(iter, 10, 20) {
     int sum = 0;
-    //char filename[100];
-    //sprintf(filename, "inputs/input%d.txt", iter);
-    //Simulator simulator(filename);
+    char filename[100];
+    sprintf(filename, "inputs/input%d.txt", iter);
+    Simulator simulator(filename);
     FOR(map, 0, 81 -1) {
       if (map == 40) { sum /= 2; }
       sum += Test(simulator, map);
       printf("TotalMoney: %d\n", sum);
     }
     //printf("TotalMoney: %d\n", sum);
-  //}
+  }
   //printf("Simulation Time: %d.%d\n", simulator.totalTime);
   int end = timeGetTime();
   printf("Total Time: %d\n", end - start);
