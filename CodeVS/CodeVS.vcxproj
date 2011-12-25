@@ -90,6 +90,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClInclude Include="Mask.h" />
+    <ClInclude Include="Misc.h" />
     <ClInclude Include="Simulator.h" />
   </ItemGroup>
   <ItemGroup>

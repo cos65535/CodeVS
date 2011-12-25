@@ -16,6 +16,11 @@ struct TowerInfo {
 	}
   bool operator<(const TowerInfo &rhs) const { return false; }
 };
+int CalcMoney(const vector<TowerInfo> &towers) {
+  int ret = 0;
+  FORIT(it, towers) { ret += it->Money(); }
+  return ret;
+}
 
 struct EnemyInfo {
   int x;

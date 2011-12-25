@@ -67,8 +67,7 @@ template<class T>
 T square(T x) { return x * x; }
 
 //cppƒtƒ@ƒCƒ‹ì‚é‚Ì‚ß‚ñ‚Ç‚¢
-template<class T>
-void PrintMatrix(const T mat[51][51], int w, int h) {
+void PrintMatrix(const int mat[51][51], int w, int h) {
   REP(y, h) {
     REP(x, w) {
       fprintf(stderr, "%d ", mat[y][x]);
