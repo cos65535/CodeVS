@@ -328,7 +328,7 @@ namespace RappidPut {
       ans[i] = make_pair(result.second, towers);
     }
     sort(ans.rbegin(), ans.rend());
-    ans[0].second = LevelDown(mapInfo, map, ans[0].second);
+    ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
 
     return ans[0].second;
   }

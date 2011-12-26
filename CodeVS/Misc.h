@@ -6,7 +6,7 @@
 #include "Mask.h"
 #include "Simulator.h"
 
-vector<TowerInfo> LevelDown(const MapInfo &mapInfo, const int map, vector<TowerInfo> iniTowers) {
+vector<TowerInfo> LevelDown(const MapInfo &mapInfo, const int map, vector<TowerInfo> iniTowers, int damage) {
   vector<TowerInfo> best = iniTowers;
   int index = 0;
   int bestMoney = Simulator::MapSimulation(mapInfo, map, best).second;
@@ -18,7 +18,7 @@ vector<TowerInfo> LevelDown(const MapInfo &mapInfo, const int map, vector<TowerI
       temp[index].level--;
     }
     pair<int, int> result = Simulator::MapSimulation(mapInfo, map, temp);
-    if (result.first == 0 && result.second > bestMoney) {
+    if (result.first <= damage && result.second > bestMoney) {
       best = temp;
       bestMoney = result.second;
     } else {

@@ -393,34 +393,45 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     if (mapInfo.levels[0].life == 1 || map < 60) { return iniTowers; }
     vector<int> iniTarget;
     REP(i, iniTowers.size()) {
-      if (iniTowers[i].type == 0 && iniTowers[i].level >= 1) {
+      if (iniTowers[i].level >= 1) {
         iniTarget.push_back(i);
       }
     }
     if (iniTarget.size() < 6) { return iniTowers; }
-    int best = iniMoney + 300;
+    const int threshold = 400;
+    int best = iniMoney + threshold;
     const int ITER_CNT = 200;
     vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT);
+    int bestDamage = 0;
     FORIT(it, ans) { *it = make_pair(best, iniTowers); }
     ans.push_back(make_pair(best, iniTowers));
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
+      int money = iniMoney;
       vector<TowerInfo> towers = iniTowers;
       vector<int> target = iniTarget;
       random_shuffle(target.begin(), target.end());
       REP(i, target.size()) {
+        money += towers[target[i]].Money();
         towers[target[i]].level = 0;
-        if ((i + 1) * 90 + iniMoney > best) {
+        money -= towers[target[i]].Money();
+        if (money > best) {
           pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers);
-          if (result.first > 1) { break; }
-          if (result.second > best) {
+          if (result.first >= mapInfo.levels[0].life) { break; }
+          if (result.second > best && result.second > iniMoney + result.first * threshold) {
             best = result.second;
+            bestDamage = result.first;
             ans[iter] = make_pair(result.second, towers);
           }
         }
       }
     }
     sort(ans.rbegin(), ans.rend());
+    if (ans[0].first - iniMoney != threshold) {
+      ans[0].second = LevelDown(mapInfo, map, ans[0].second, bestDamage);
+      ans[0].first = - CalcMoney(ans[0].second);
+      //printf("Gain:%d\n", ans[0].first - iniMoney);
+    }
     return ans[0].second;
   }
 
@@ -445,8 +456,8 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
     }
     sort(ans.rbegin(), ans.rend());
-    ans[0].second = LevelDown(mapInfo, map, ans[0].second);
-    ans[0].first = CalcMoney(ans[0].second);
+    ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
+    ans[0].first = -CalcMoney(ans[0].second);
 
     //return ans[0].second;
     return LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
