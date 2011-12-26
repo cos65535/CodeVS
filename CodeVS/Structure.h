@@ -15,6 +15,9 @@ struct TowerInfo {
 		return mo[type] * (level + 1) * (level + 2) / 2;
 	}
   bool operator<(const TowerInfo &rhs) const { return false; }
+  bool operator==(const TowerInfo &rhs) const {
+    return x == rhs.x && y == rhs.y && level == rhs.level && type == rhs.type;
+  }
 };
 int CalcMoney(const vector<TowerInfo> &towers) {
   int ret = 0;

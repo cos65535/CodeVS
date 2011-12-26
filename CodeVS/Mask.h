@@ -35,7 +35,7 @@ void PrintMask(const Field &field, const int mask[51][51]) {
   }
 }
 
-void SaveMask(const char *filename, const MapInfo &mapInfo, const vector<TowerInfo> &towers, int money) {
+void SaveMask(const char *filename, const MapInfo &mapInfo, const vector<TowerInfo> &towers, int money, bool afterHalf) {
   Field field(mapInfo.field, mapInfo.w, mapInfo.h);
   field.PutTower(towers);
   FILE *fp = fopen(filename, "a");
@@ -45,7 +45,7 @@ void SaveMask(const char *filename, const MapInfo &mapInfo, const vector<TowerIn
     REP(x, field.w) {
       int type = field.field[y][x] / 1000 - 1;
       int level = field.field[y][x] % 1000 / 100 - 1;
-      if (field.field[y][x] == '1') { type = 0; level = 0; }
+      if (afterHalf && field.field[y][x] == '1') { type = 0; level = 0; }
       if (type < 0) {
         fprintf(fp, "0 ");
       } else {
@@ -113,4 +113,13 @@ vector<TowerInfo> MaskToTower(const Field &field, const int mask[51][51], int mo
     }
   }
   return ret;
+}
+
+void TowerToMask(const Field &field, vector<TowerInfo> towers, int mask[51][51], int money) {
+  memset(mask, 0, sizeof(int) * 51 * 51);
+  FORIT(it, towers) {
+    if (money < it->Money()) { continue; }
+    money -= it->Money();
+    mask[it->y][it->x] = it->type * 10 + it->level + 11;
+  }
 }

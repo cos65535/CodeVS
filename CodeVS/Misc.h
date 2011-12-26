@@ -9,6 +9,7 @@
 vector<TowerInfo> LevelDown(const MapInfo &mapInfo, const int map, vector<TowerInfo> iniTowers) {
   vector<TowerInfo> best = iniTowers;
   int index = 0;
+  int bestMoney = Simulator::MapSimulation(mapInfo, map, best).second;
   while (index < (int)best.size()) {
     vector<TowerInfo> temp = best;
     if (temp[index].level == 0) {
@@ -16,8 +17,10 @@ vector<TowerInfo> LevelDown(const MapInfo &mapInfo, const int map, vector<TowerI
     } else {
       temp[index].level--;
     }
-    if (Simulator::MapSimulation(mapInfo, map, temp).first == 0) {
+    pair<int, int> result = Simulator::MapSimulation(mapInfo, map, temp);
+    if (result.first == 0 && result.second > bestMoney) {
       best = temp;
+      bestMoney = result.second;
     } else {
       index++;
     }

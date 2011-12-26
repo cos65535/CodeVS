@@ -89,7 +89,7 @@ namespace Tron {
         Put(field, mask, nx, ny, use);
       }
     }
-    if (field.CalcDist(mask) == -1) { return CalcMask(iter, field, mask, useCnt); }
+    if (!field.OK2(mask)) { return CalcMask(iter, field, mask, useCnt); }
 
     int px = field.gs[target].x;
     int py = field.gs[target].y;
@@ -233,24 +233,10 @@ next:;
     int iniMask[51][51];
     memcpy(iniMask, mask, sizeof(int) * 51 * 51);
 
-    int route[51][51];
     int sums[51][51];
     MEMSET(sums, 0);
     Field field(mapInfo.field, w, h);
-    field.CalcEnemyRoute(mask, route);
-    REP(sy, h) {
-      REP(sx, w) {
-        int sum = 0;
-        REP(y, h) {
-          REP(x, w) {
-            int d = square(sy - y) + square(sx - x);
-            if (d > square(4 + 4)) { continue; }
-            sum += route[y][x];
-          }
-        }
-        sums[sy][sx] = sum;
-      }
-    }
+    field.CalcSum(mask, sums);
 
     int ret = 0;
     int lastLevel = 0;
@@ -395,7 +381,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       REP(i, min((int)ans.size(), 5)) {
         char filename[100];
         sprintf(filename, "replay/%02d.txt", map);
-        SaveMask(filename, mapInfo, ans[i].second, ans[i].first);
+        SaveMask(filename, mapInfo, ans[i].second, ans[i].first, true);
       }
     }
 
@@ -407,7 +393,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     if (mapInfo.levels[0].life == 1 || map < 60) { return iniTowers; }
     vector<int> iniTarget;
     REP(i, iniTowers.size()) {
-      if (iniTowers[i].type == 0 && iniTowers[i].level == 4) {
+      if (iniTowers[i].type == 0 && iniTowers[i].level >= 1) {
         iniTarget.push_back(i);
       }
     }
@@ -457,10 +443,6 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       int money = Simulation(mapInfo, map, answer[i].mask, best);
       best = max(best, money);
       ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
-
-      SetFrozenTower(field, temp.mask, 10);
-      money = Simulation(mapInfo, map, temp.mask, best);
-      ans[i + upper] = make_pair(money, MaskToTower(field, temp.mask, mapInfo.levels[0].money));
     }
     sort(ans.rbegin(), ans.rend());
     ans[0].second = LevelDown(mapInfo, map, ans[0].second);

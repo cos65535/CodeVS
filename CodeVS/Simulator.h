@@ -108,6 +108,7 @@ struct Simulator {
       }
 			ret.first += nret.first;
 			ret.second += nret.second;
+      if (ret.first >= 4) { break; }
 		}
 		return ret;
 	}
@@ -218,6 +219,7 @@ next:;
           it1->life = -1;
           deadCnt++;
           it1->alive = false;
+          if (ret.first == 5) { goto end; }
         }
         if (!it1->alive) {
           FORIT(it2, towers) {
@@ -234,6 +236,7 @@ next:;
         break;
       }
 		}
+end:
 
     int nstage = stage;
     int nlevel = level + 1;

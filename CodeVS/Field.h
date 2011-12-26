@@ -45,7 +45,16 @@ public:
     memcpy(this->move, rhs.move, sizeof(this->move));
     return *this;
   }
-	Field(const int f[51][51], int w, int h) : w(w), h(h) {
+	Field(const int f[51][51], int W, int H) {
+    Create(f, W, H);
+	}
+  Field (const MapInfo &mapInfo) {
+    Create(mapInfo.field, mapInfo.w, mapInfo.h);
+  }
+
+  void Create(const int f[51][51], int W, int H) {
+    w = W;
+    h = H;
 		memcpy(field, f, sizeof(field));
 		MEMSET(move, 0x0f);
 		ss.clear();
@@ -60,7 +69,7 @@ public:
 				}
 			}
 		}
-	}
+  }
 
   int PutTower(const vector<TowerInfo> &tower) {
     int ret = 0;
@@ -244,6 +253,25 @@ public:
         int ny = y + dy[move[y][x]];
         x = nx;
         y = ny;
+      }
+    }
+  }
+
+  void CalcSum(const int mask[51][51], int sums[51][51]) {
+    int route[51][51];
+    CalcEnemyRoute(mask, route);
+    memset(sums, 0, sizeof(sums));
+    REP(sy, h) {
+      REP(sx, w) {
+        int sum = 0;
+        REP(y, h) {
+          REP(x, w) {
+            int d = square(sy - y) + square(sx - x);
+            if (d > square(4 + 4)) { continue; }
+            sum += route[y][x];
+          }
+        }
+        sums[sy][sx] = sum;
       }
     }
   }
