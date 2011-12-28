@@ -246,7 +246,7 @@ namespace RappidPut {
       Field field(mapInfo);
       int mask[51][51];
       MEMSET(mask, 0);
-      Tsubusu(mapInfo, mask);
+      //Tsubusu(mapInfo, mask);
       int money = SwapPut(mapInfo, stage, mask);
       ans[iter] = make_pair(money, MaskToTower(field, mask, mapInfo.levels[0].money));
       best = max(best, money);

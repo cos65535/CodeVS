@@ -93,7 +93,7 @@ vector<MaskInfo> LoadMasks(const char *filename, const MapInfo &mapInfo) {
       ret.push_back(info);
     }
   }
-  sort(ret.begin(), ret.end());
+  sort(ret.rbegin(), ret.rend());
   return ret;
 }
 

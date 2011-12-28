@@ -381,7 +381,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     }
     sort(ans.rbegin(), ans.rend());
     if (save) {
-      REP(i, min((int)ans.size(), 5)) {
+      REP(i, min((int)ans.size(), 10)) {
         char filename[100];
         sprintf(filename, "replay/%02d.txt", map);
         SaveMask(filename, mapInfo, ans[i].second, ans[i].first, true);
@@ -421,7 +421,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     const int threshold = 400;
     int best = iniMoney + threshold;
     if (map == last) { best = iniMoney; }
-    int ITER_CNT = 400;
+    int ITER_CNT = 500;
     vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT);
     FORIT(it, ans) { *it = make_pair(best, iniTowers); }
     ans.push_back(make_pair(best, iniTowers));
@@ -477,7 +477,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     REP(i, upper) { ans[i].first = -150000; }
 #pragma omp parallel for
     for (int i = 0; i < upper; i++) {
-      if (answer[i].money <= best) { continue; }
+      if (answer[i].money <= best - 50) { continue; }
       MaskInfo temp = answer[i];
       int money = Simulation(mapInfo, map, answer[i].mask, best);
       best = max(best, money);

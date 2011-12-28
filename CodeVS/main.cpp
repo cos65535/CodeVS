@@ -91,7 +91,7 @@ int Test(Simulator &simulator, int map) {
 }
 
 int main() {
-  srand(1234);
+  srand(123456);
   Simulator simulator("inputs/input.txt");
 #ifndef CONTEST
   int start = timeGetTime();
@@ -101,13 +101,14 @@ int main() {
   //  sum += Test(simulator, map);
   //  printf("TotalMoney: %d\n", sum);
   //}
-  FOR(iter, 0, 30) {
+  FOR(iter, 4, 30) {
     printf("Iter:%d\n", iter);
-    int sum = 100;
+    //int sum = 100;
+    int sum = 529000;
     char filename[100];
     sprintf(filename, "inputs/input%d.txt", iter);
     Simulator simulator(filename);
-    FOR(map, 0, 80) {
+    FOR(map, 40, 80) {
       if (map == 40) { sum /= 2; }
       sum += Test(simulator, map);
       printf("TotalMoney: %d\n", sum);
