@@ -11,10 +11,13 @@ namespace Tron {
   const int dx[4] = { 1, 0, -1, 0 };
   const int dy[4] = { 0, 1, 0, -1 };
 
-  int Put(const Field &field, int mask[51][51], int x, int y, int &use) {
+  int Put(const Field &field, int mask[51][51], int x, int y, int &use, int probability) {
     if (field.field[y][x] != '0') { return use; }
     if (mask[y][x] != 0) { return use; }
     mask[y][x] = 11;
+    if (rand() % 101 < probability) {
+      mask[y][x] = 31;
+    }
     use++;
     return use;
   }
@@ -75,7 +78,7 @@ namespace Tron {
   }
 
 
-  int CalcMask(int iter, const Field &field, int mask[51][51], int useCnt) {
+  int CalcMask(int iter, const Field &field, int mask[51][51], int useCnt, int probability) {
     int dist = 0;
     int use = 0;
     int target = rand() % field.gs.size();
@@ -86,10 +89,10 @@ namespace Tron {
       REP(dir, 4) {
         int nx = field.gs[i].x + dx[dir];
         int ny = field.gs[i].y + dy[dir];
-        Put(field, mask, nx, ny, use);
+        Put(field, mask, nx, ny, use, 0);
       }
     }
-    if (!field.OK2(mask)) { return CalcMask(iter, field, mask, useCnt); }
+    if (!field.OK2(mask)) { return CalcMask(iter, field, mask, useCnt, probability); }
 
     int px = field.gs[target].x;
     int py = field.gs[target].y;
@@ -124,7 +127,7 @@ namespace Tron {
         if (!ng) {
           ng |= !field.OK(mask, nnx, nny);
         }
-        Put(field, mask, nnx, nny, use);
+        Put(field, mask, nnx, nny, use, probability);
       }
       if (ng) {
         REP(d, 4) {
@@ -152,12 +155,12 @@ next:;
     return dist;
   }
 
-  int CalcBestMask(const Field &field, int bestMask[51][51], int useCnt) {
+  int CalcBestMask(const Field &field, int bestMask[51][51], int useCnt, int probability) {
     int bestDist = -1;
     memset(bestMask, 0x0f, sizeof(int) * 51 * 51);
     REP(iter, 200) {
       int mask[51][51];
-      int dist = CalcMask(rand() % 3600, field, mask, useCnt);
+      int dist = CalcMask(rand() % 3600, field, mask, useCnt, probability);
       // best‚ðXV
       if (dist > bestDist) {
         memcpy(bestMask, mask, sizeof(int) * 51 * 51);
@@ -354,7 +357,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       int useCnt = mapUse[map] + rand() % 101 - 50;
       int bestMask[51][51];
       int t1 = timeGetTime();
-      CalcBestMask(field, bestMask, useCnt);
+      CalcBestMask(field, bestMask, useCnt, rand() % 21);
       //PrintMask(field, bestMask);
       int t2 = timeGetTime();
       EraseUneedTower(field, bestMask);
@@ -389,50 +392,75 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
   }
 
   vector<TowerInfo> LifeToMoney(const MapInfo &mapInfo, const int map, const vector<TowerInfo> iniTowers, int iniMoney) {
-    //assert(Simulator::MapSimulation(mapInfo, map, iniTowers).first == 0);
-    if (mapInfo.levels[0].life == 1 || map < 60) { return iniTowers; }
+    bool ok[80];
+    MEMSET(ok, false);
+    ok[57] = true;
+    ok[59] = true;
+    ok[60] = true;
+    ok[61] = true;
+    ok[62] = true;
+    ok[66] = true;
+    ok[67] = true;
+    ok[68] = true;
+    ok[70] = true;
+    ok[71] = true;
+    ok[72] = true;
+    ok[73] = true;
+    ok[75] = true;
+    ok[77] = true;
+    ok[78] = true;
+    const int last = 78;
+
+    if (mapInfo.levels[0].life == 1 || !ok[map]) { return LevelDown(mapInfo, map, iniTowers, 0); }
     vector<int> iniTarget;
     REP(i, iniTowers.size()) {
-      if (iniTowers[i].level >= 1) {
+      if (iniTowers[i].level >= 1 && iniTowers[i].type == 0) {
         iniTarget.push_back(i);
       }
     }
-    if (iniTarget.size() < 6) { return iniTowers; }
     const int threshold = 400;
     int best = iniMoney + threshold;
-    const int ITER_CNT = 200;
+    if (map == last) { best = iniMoney; }
+    int ITER_CNT = 400;
     vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT);
-    int bestDamage = 0;
     FORIT(it, ans) { *it = make_pair(best, iniTowers); }
     ans.push_back(make_pair(best, iniTowers));
+
+    vector<bool> end(ITER_CNT);
+    vector<int> moneys(ITER_CNT, iniMoney);
+    vector<vector<TowerInfo> > towers(ITER_CNT, iniTowers);
+    vector<vector<int> > target(ITER_CNT, iniTarget);
+    REP(iter, ITER_CNT) {
+      random_shuffle(target[iter].begin(), target[iter].end());
+    }
+    int bestDamage = 0;
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
-      int money = iniMoney;
-      vector<TowerInfo> towers = iniTowers;
-      vector<int> target = iniTarget;
-      random_shuffle(target.begin(), target.end());
-      REP(i, target.size()) {
-        money += towers[target[i]].Money();
-        towers[target[i]].level = 0;
-        money -= towers[target[i]].Money();
-        if (money > best) {
-          pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers);
-          if (result.first >= mapInfo.levels[0].life) { break; }
-          if (result.second > best && result.second > iniMoney + result.first * threshold) {
+      REP(i, target[0].size()) {
+        //if (i >= 4 && best == iniMoney + threshold) { continue; }
+        if (i >= 20) { continue; }
+        //if (end[iter]) { continue; }
+        moneys[iter] += towers[iter][target[iter][i]].Money();
+        towers[iter][target[iter][i]].level = 0;
+        moneys[iter] -= towers[iter][target[iter][i]].Money();
+        if (moneys[iter] > best) {
+          pair<int, int> result = Simulator::MapSimulation(mapInfo, 40, towers[iter], mapInfo.levels[0].life);
+          //pair<int, int> result = Simulator::MapSimulation(mapInfo, 40, towers[iter]);
+          //if (result.first >= 10) { break; }
+          if (result.first >= mapInfo.levels[0].life) {
+            end[iter] = true;
+            break;
+          }
+          if (result.second > best && (result.second > iniMoney + result.first * threshold || map == last)) {
             best = result.second;
             bestDamage = result.first;
-            ans[iter] = make_pair(result.second, towers);
+            ans[iter] = make_pair(result.second, towers[iter]);
           }
         }
       }
     }
     sort(ans.rbegin(), ans.rend());
-    if (ans[0].first - iniMoney != threshold) {
-      ans[0].second = LevelDown(mapInfo, map, ans[0].second, bestDamage);
-      ans[0].first = - CalcMoney(ans[0].second);
-      //printf("Gain:%d\n", ans[0].first - iniMoney);
-    }
-    return ans[0].second;
+    return ans[0].second = LevelDown(mapInfo, map, ans[0].second, bestDamage);
   }
 
   vector<TowerInfo> ReplayAttack(const MapInfo &mapInfo, const int map, const int level) {
@@ -445,8 +473,8 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     //fprintf(stderr, "Size: %d\n", answer.size());
     int best = -15000;
     int upper = (int)answer.size();
-    vector<pair<int, vector<TowerInfo> > > ans(upper * 2);
-    REP(i, upper * 2) { ans[i].first = -150000; }
+    vector<pair<int, vector<TowerInfo> > > ans(upper);
+    REP(i, upper) { ans[i].first = -150000; }
 #pragma omp parallel for
     for (int i = 0; i < upper; i++) {
       if (answer[i].money <= best) { continue; }
@@ -456,10 +484,11 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
     }
     sort(ans.rbegin(), ans.rend());
-    ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
-    ans[0].first = -CalcMoney(ans[0].second);
+    ans[0].second = LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
+    //ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
+    //ans[0].first = -CalcMoney(ans[0].second);
 
     //return ans[0].second;
-    return LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
+    return ans[0].second;
   }
 };

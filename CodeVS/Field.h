@@ -123,11 +123,52 @@ public:
 			}
 		}
 	}
+
   int CalcDist(const int mask[51][51]) const {
     bool visit[51][51];
     int dist[51][51];
     MEMSET(visit, false);
     MEMSET(dist, 0x0f);
+    priority_queue<DistPoint> que;
+    FORIT(it, gs) {
+      que.push(DistPoint(it->x, it->y, 0, 0));
+    }
+    int cnt = 0;
+    int ret = 1 << 28;
+	  const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+	  const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
+    while (!que.empty()) {
+      DistPoint p = que.top();
+      que.pop();
+      if (visit[p.y][p.x]) { continue; }
+      visit[p.y][p.x] = true;
+      if (field[p.y][p.x] == 's') {
+        return p.dist;
+        ret = min(ret, p.dist);
+        cnt++;
+      }
+      REP(dir, 8) {
+        int nx = p.x + dx[dir];
+        int ny = p.y + dy[dir];
+				int ndist = p.dist + 10 + (dir & 1) * 4;
+				if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
+				if (dir % 2 == 1) {
+					if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x] != 0) { continue; }
+					if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx] != 0) { continue; }
+				}
+				dist[ny][nx] = ndist;
+				que.push(DistPoint(nx, ny, ndist, dir));
+      }
+    }
+    if (cnt != ss.size()) { return 1 << 28; }
+    return ret;
+  }
+
+  int CalcDist2(const int mask[51][51], int dist[51][51]) const {
+    bool visit[51][51];
+    MEMSET(visit, false);
+    memset(dist, 0x0f, sizeof(int) * 51 * 51);
     priority_queue<DistPoint> que;
     FORIT(it, gs) {
       que.push(DistPoint(it->x, it->y, 0, 0));

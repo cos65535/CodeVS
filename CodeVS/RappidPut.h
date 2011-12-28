@@ -45,7 +45,7 @@ namespace RappidPut {
     return ret;
   }
 
-  vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level) {
+  vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level, int mask[51][51]) {
     if (stage <= 1) { return Kimeuchi(stage, level); }
     Field field(mapInfo);
     vector<TowerInfo> tower = mapInfo.levels[level].tower;
@@ -54,12 +54,12 @@ namespace RappidPut {
 
     int mapUse[40];
     REP(i, 40) { mapUse[i] = 1; }
-
+    
     int w = field.w;
     int h = field.h;
     bool visit[51][51];
-    int mask[51][51];
-    MEMSET(mask, 0);
+    //int mask[51][51];
+    //MEMSET(mask, 0);
     REP(sy, h) {
       REP(sx, w) {
         if (field.field[sy][sx] != 's') { continue; }
@@ -80,6 +80,7 @@ namespace RappidPut {
             int type = 0;
             ret.push_back(TowerInfo(p.x, p.y, level, type));
             cnt++;
+            mask[p.y][p.x] = 15;
             field.field[p.y][p.x] = 1500;
             break;
             if (cnt >= mapUse[stage]) { break; }
@@ -123,10 +124,10 @@ namespace RappidPut {
     Field field(mapInfo);
     Simulator simulator;
     simulator.stages.push_back(mapInfo);
-    vector<TowerInfo> towers = MaskToTower(field, mask, mapInfo.levels[0].money);
+    vector<TowerInfo> towers;
     int cnt = rand() % 11 - 3;
     {
-      vector<TowerInfo> temp = RappidPut(mapInfo, map, 0);
+      vector<TowerInfo> temp = RappidPut(mapInfo, map, 0, mask);
       random_shuffle(temp.begin(), temp.end());
       FORIT(it, temp) {
         if (cnt < 0) { cnt++; continue; }
@@ -156,7 +157,7 @@ namespace RappidPut {
     field.CalcSum(mask, sums);
 
     vector<TowerInfo> bestTowers = towers;
-    REP(iter, 3000) {
+    REP(iter, 10000) {
       if (towers.size() == 0) { break; }
       vector<TowerInfo> ptowers = towers;
       int pmask[51][51];
@@ -187,7 +188,7 @@ namespace RappidPut {
         }
         assert(field.OK2(mask));
       }
-      pair<int, int> result = simulator.MapSimulation(mapInfo, map, towers);
+      pair<int, int> result = simulator.MapSimulation(mapInfo, map, MaskToTower(field, mask, mapInfo.levels[0].money), 1);
       result.second += -result.first * 5000;
       money = result.second;
       if (money > best) {
@@ -201,15 +202,15 @@ namespace RappidPut {
         towers = ptowers;
       }
     }
-    TowerToMask(field, bestTowers, mask, mapInfo.levels[0].money);
     if (!field.OK2(mask)) { best = -1500000; }
     return best;
   }
 
   void Tsubusu(const MapInfo &mapInfo, int mask[51][51]) {
+    memset(mask, 0, sizeof(int) * 51 * 51);
     Field field(mapInfo);
     int cnt = rand() % field.gs.size();
-    if (rand() % 10) { cnt = 0; }
+    if (rand() % 2) { cnt = 0; }
     vector<Field::Point> gs = field.gs;
     random_shuffle(gs.begin(), gs.end());
     const int dx[4] = { 1, 0, -1, 0 };
@@ -226,16 +227,18 @@ namespace RappidPut {
   }
 
   vector<TowerInfo> RappidPut2(const MapInfo &mapInfo, int stage, int level, bool save) {
-    if (stage == 0 || stage == 1) { return RappidPut(mapInfo, stage, level); }
+    if (stage == 0 || stage == 1) { return Kimeuchi(stage, level); }
     if (level != 0) { return vector<TowerInfo>(); }
     int best = -15000;
     const int ITER_CNT = 12;
     vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT, make_pair(best, vector<TowerInfo>()));
     {
-      vector<TowerInfo> towers = RappidPut(mapInfo, stage, level);
+      int mask[51][51];
+      memset(mask, 0, sizeof(int) * 51 * 51);
+      vector<TowerInfo> towers = RappidPut(mapInfo, stage, level, mask);
       pair<int, int> result = Simulator::MapSimulation(mapInfo, stage, towers);
       //printf("-1 %d %d\n", result.first, result.second);
-      result.second += -result.first * 500;
+      result.second += -result.first * 400;
       ans.push_back(make_pair(result.second, towers));
     }
 #pragma omp parallel for
@@ -243,7 +246,7 @@ namespace RappidPut {
       Field field(mapInfo);
       int mask[51][51];
       MEMSET(mask, 0);
-      //Tsubusu(mapInfo, mask);
+      Tsubusu(mapInfo, mask);
       int money = SwapPut(mapInfo, stage, mask);
       ans[iter] = make_pair(money, MaskToTower(field, mask, mapInfo.levels[0].money));
       best = max(best, money);
@@ -308,13 +311,16 @@ namespace RappidPut {
     //fprintf(stderr, "Size: %d\n", answer.size());
     int best = -15000;
     int upper = (int)answer.size();
-    vector<pair<int, vector<TowerInfo> > > ans(upper * 2);
-    REP(i, upper * 2) { ans[i].first = -150000; }
+    vector<pair<int, vector<TowerInfo> > > ans(upper);
+    REP(i, upper) { ans[i].first = -150000; }
     {
-      vector<TowerInfo> towers = RappidPut(mapInfo, map, level);
-      pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers);
+      int mask[51][51];
+      memset(mask, 0, sizeof(int) * 51 * 51);
+      vector<TowerInfo> towers = RappidPut(mapInfo, map, level, mask);
+      pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers, 1);
       result.second += -result.first * 500;
       ans.push_back(make_pair(result.second, towers));
+      best = result.second;
     }
 #pragma omp parallel for
     for (int i = 0; i < upper; i++) {

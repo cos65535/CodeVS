@@ -72,7 +72,8 @@ struct Simulator {
   //  stages[map].Print();
   //}
 
-  static pair<int, int> MapSimulation(const MapInfo &mapInfo, int stage, const vector<TowerInfo> &towers) {
+  static pair<int, int> MapSimulation(const MapInfo &mapInfo, int stage, const vector<TowerInfo> &towers, int damage = 10) {
+    damage = min(damage, 10);
     Simulator simulator;
     if (stage >= 40) {
       simulator.stages.resize(40);
@@ -96,25 +97,30 @@ struct Simulator {
   //}
 
   //1マップのシミューレーション
-	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers) {
+	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers, int damage = 10) {
+    damage = min(damage, 10);
     vector<TowerInfo> nothing;
 		pair<int, int> ret(0, 0);
 		REP(i, stages[stage].levels.size()) {
 			pair<int, int> nret;
       if (i == 0) {
-        nret = LevelSimulation(stage, i, towers);
+        nret = LevelSimulation(stage, i, towers, damage - nret.first);
       } else {
-        nret = LevelSimulation(stage, i, nothing);
+        nret = LevelSimulation(stage, i, nothing, damage - nret.first);
       }
 			ret.first += nret.first;
 			ret.second += nret.second;
-      if (ret.first >= 10) { break; }
+      if (ret.first >= damage) {
+        ret.first = 10;
+        break;
+      }
 		}
 		return ret;
 	}
 
   //1レベルのシミュレーション
-	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos) {
+	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
+    damage = min(damage, 10);
     int start = timeGetTime();
 		pair<int, int> ret(0, 0);
 		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
@@ -219,7 +225,7 @@ next:;
           it1->life = -1;
           deadCnt++;
           it1->alive = false;
-          if (ret.first == 10) { goto end; }
+          if (ret.first >= damage) { goto end; }
         }
         if (!it1->alive) {
           FORIT(it2, towers) {
