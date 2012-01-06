@@ -285,64 +285,22 @@ next:;
   vector<TowerInfo> TronAI(const MapInfo &mapInfo, const int map, const int level, bool save, int useCnt = -1, int useFrozenCnt = -1) {
     if (level != 0) { return vector<TowerInfo>(); }
     int mapUse[80];
-    int mapFrozen[80];
     REP(i, 80) { mapUse[i] = 150; }
-    REP(i, 80) { mapFrozen[i] = 10; }
-    //mapUse[40] = 10;
-    //mapUse[41] = 10;
-    //mapUse[42] = 10;
-    //mapUse[43] = 20;
-    //mapUse[44] = 20;
-    //mapUse[45] = 20;
-    //mapUse[46] = 20;
-    //mapUse[47] = 33; //!
-    //mapUse[48] = 30; //!
-    //mapUse[49] = 30; //!
-    //mapUse[50] = 40; //!
-
-    //mapUse[51] = 30;
-    //mapUse[52] = 40;
-    //mapUse[53] = 32;
-    //mapUse[54] = 42;
-    //mapUse[55] = 42; //!
-    //mapUse[56] = 45; //!
-    //mapUse[57] = 51; //!!
-    //mapUse[58] = 45;
-    //mapUse[59] = 70; //!!
-    //mapUse[60] = 51;
-
-    //mapUse[61] = 71; //!!
-    //mapUse[62] = 65;
-    //mapUse[63] = 50;
-    //mapUse[64] = 58;
-    //mapUse[65] = 60;
-    //mapUse[66] = 65;
-    //mapUse[67] = 50;
-    //mapUse[68] = 43;
-    //mapUse[69] = 65;
-    //mapUse[70] = 70;
-
-    //mapUse[71] = 80;
-    //mapUse[72] = 70;
-
-mapUse[40]= 24;mapFrozen[40]= 2;//Money=580
-mapUse[41]= 42;mapFrozen[41]= 2;//Money=952
-mapUse[42]= 51;mapFrozen[42]= 0;//Money=1226
-mapUse[43]= 82;mapFrozen[43]= 3;//Money=1819
-mapUse[44]= 49;mapFrozen[44]= 1;//Money=2119
-mapUse[45]= 78;mapFrozen[45]= 3;//Money=1992
-mapUse[46]= 48;mapFrozen[46]= 7;//Money=1954
-mapUse[47]=142;mapFrozen[47]= 1;//Money=2908
-mapUse[48]= 59;mapFrozen[48]= 4;//Money=3548
-mapUse[49]=110;mapFrozen[49]= 1;//Money=3441
-mapUse[50]= 69;mapFrozen[50]=11;//Money=3224
-mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
+mapUse[40]= 24;
+mapUse[41]= 42;
+mapUse[42]= 51;
+mapUse[43]= 82;
+mapUse[44]= 49;
+mapUse[45]= 78;
+mapUse[46]= 48;
+mapUse[47]=142;
+mapUse[48]= 59;
+mapUse[49]=110;
+mapUse[50]= 69;
+mapUse[51]= 98;
 
     if (useCnt != -1) {
       mapUse[map] = useCnt;
-    }
-    if (useFrozenCnt != -1) {
-      mapFrozen[map] = useFrozenCnt;
     }
 
     const int h = mapInfo.h;
@@ -350,14 +308,14 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int best = -15000;
     vector<pair<int, vector<TowerInfo> > > ans;
-    const int ITER_CNT = 1000;
+    const int ITER_CNT = 3000;
     ans.resize(ITER_CNT);
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
-      int useCnt = mapUse[map] + rand() % 101 - 50;
+      int useCnt = mapUse[map] + rand() % 151 - 50;
       int bestMask[51][51];
       int t1 = timeGetTime();
-      CalcBestMask(field, bestMask, useCnt, rand() % 21);
+      CalcBestMask(field, bestMask, useCnt, 0);
       //PrintMask(field, bestMask);
       int t2 = timeGetTime();
       EraseUneedTower(field, bestMask);
@@ -369,7 +327,7 @@ mapUse[51]= 98;mapFrozen[51]= 2;//Money=2863
       EraseUneedTower(field, bestMask);
       //PrintMask(field, bestMask);
       int t5 = timeGetTime();
-      SetFrozenTower(field, bestMask, (iter & 1) * (10 + rand() % 3));
+      SetFrozenTower(field, bestMask, (iter & 1) * (10 + rand() % 5));
       //PrintMask(field, bestMask);
       int t6 = timeGetTime();
       int money = Simulation(mapInfo, map, bestMask, best);

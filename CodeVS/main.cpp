@@ -72,11 +72,11 @@ int Test(Simulator &simulator, int map) {
     
     vector<TowerInfo> output;
     if (map < 40) {
-      output = RappidPut::RappidPut2(simulator.stages[map], map, level, true);
-      //output = RappidPut::ReplayAttack(simulator.stages[map], map, level);
+      //output = RappidPut::RappidPut2(simulator.stages[map], map, level, true);
+      output = RappidPut::ReplayAttack(simulator.stages[map], map, level);
     } else {
-      output = Tron::TronAI(simulator.stages[map], map, level, true);
-      //output = Tron::ReplayAttack(simulator.stages[map], map, level);
+      //output = Tron::TronAI(simulator.stages[map], map, level, true);
+      output = Tron::ReplayAttack(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -91,29 +91,29 @@ int Test(Simulator &simulator, int map) {
 }
 
 int main() {
-  srand(123456);
+  srand(1234567);
   Simulator simulator("inputs/input.txt");
 #ifndef CONTEST
   int start = timeGetTime();
-  //int sum = 100;
-  //FOR(map, 0, 80) {
-  //  if (map == 40) { sum /= 2; }
-  //  sum += Test(simulator, map);
-  //  printf("TotalMoney: %d\n", sum);
-  //}
-  FOR(iter, 4, 30) {
-    printf("Iter:%d\n", iter);
-    //int sum = 100;
-    int sum = 529000;
-    char filename[100];
-    sprintf(filename, "inputs/input%d.txt", iter);
-    Simulator simulator(filename);
-    FOR(map, 40, 80) {
-      if (map == 40) { sum /= 2; }
-      sum += Test(simulator, map);
-      printf("TotalMoney: %d\n", sum);
-    }
+  int sum = 100;
+  FOR(map, 0, 80) {
+    if (map == 40) { sum /= 2; }
+    sum += Test(simulator, map);
+    printf("TotalMoney: %d\n", sum);
   }
+  //FOR(iter, 19, 30) {
+  //  printf("Iter:%d\n", iter);
+  //  //int sum = 100;
+  //  int sum = 529000;
+  //  char filename[100];
+  //  sprintf(filename, "inputs/input%d.txt", iter);
+  //  Simulator simulator(filename);
+  //  FOR(map, 40, 80) {
+  //    if (map == 40) { sum /= 2; }
+  //    sum += Test(simulator, map);
+  //    printf("TotalMoney: %d\n", sum);
+  //  }
+  //}
   //printf("Simulation Time: %d.%d\n", simulator.totalTime);
   int end = timeGetTime();
   printf("Total Time: %d(sec)\n", (end - start) / 1000);
