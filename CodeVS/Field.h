@@ -112,11 +112,11 @@ public:
 				int nx = p.x + dx[dir];
 				int ny = p.y + dy[dir];
 				int ndist = p.dist + 2 + dir % 2;
-				if (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g' || mask[ny][nx]) { continue; }
+				if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx]) { continue; }
 				if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
 				if (dir % 2 == 1) {
-					if (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g' || mask[ny][p.x]) { continue; }
-					if (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g' || mask[p.y][nx]) { continue; }
+					if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x]) { continue; }
+					if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx]) { continue; }
 				}
 				dist[ny][nx] = ndist;
 				que.push(DistPoint(nx, ny, ndist, dir));
@@ -161,7 +161,7 @@ public:
 				que.push(DistPoint(nx, ny, ndist, dir));
       }
     }
-    if (cnt != ss.size()) { return 1 << 28; }
+    if (cnt != (int)ss.size()) { return 1 << 28; }
     return ret;
   }
 
@@ -201,7 +201,7 @@ public:
 				que.push(DistPoint(nx, ny, ndist, dir));
       }
     }
-    if (cnt != ss.size()) { return 1 << 28; }
+    if (cnt != (int)ss.size()) { return 1 << 28; }
     return ret;
   }
 
@@ -213,7 +213,7 @@ public:
     REP(dir, 4) {
       int nx = x + dx[dir];
       int ny = y + dy[dir];
-      if (field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g' || mask[ny][nx] != 0) { continue; }
+      if ((field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
       if (visit[ny][nx]) { continue; }
       ret |= dfs(mask, visit, nx, ny);
     }

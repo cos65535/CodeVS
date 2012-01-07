@@ -5,65 +5,6 @@
 #include "RappidPut.h"
 #include "Tron.h"
 
-//void AdjustTron(int map) {
-//  int best = -100000;
-//  int bestUse = -1;
-//  int bestFrozen = -1;
-//  Simulator simulator[10];
-//  REP(iter, 10) {
-//    char filename[100];
-//    sprintf(filename, "inputs/input%d.txt", iter);
-//    simulator[iter].Load(filename);
-//  }
-//  fprintf(stderr, "Stage:%d\n", map + 1);
-//  int upper = 60;
-//  FOR(use, 50, upper) {
-//    int sum = 0;
-//    vector<int> result;
-//    REP(iter, 10) {
-//      int money = 0;
-//      REP(level, 25) {
-//        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, use, 0);
-//        money += simulator[iter].LevelSimulation(map, level, output).second;
-//      }
-//      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
-//      sum += money;
-//    }
-//    sum /= 10;
-//    if (sum > best) {
-//      upper = use + 30;
-//      best = sum;
-//      bestUse = use;
-//      fprintf(stderr, "Update!!\n");
-//      fprintf(stderr, "Use: %d, Money: %d\n\n", use, sum);
-//    }
-//  }
-//  best = -100000;
-//  upper = 20;
-//  REP(frozen, upper) {
-//    int sum = 0;
-//    vector<int> result;
-//    REP(iter, 10) {
-//      int money = 0;
-//      REP(level, 25) {
-//        vector<TowerInfo> output = Tron::TronAI(simulator[iter].stages[map], map, level, false, bestUse, frozen);
-//        money += simulator[iter].LevelSimulation(map, level, output).second;
-//      }
-//      //fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n", use, frozen, money);
-//      sum += money;
-//    }
-//    sum /= 10;
-//    if (sum > best) {
-//      upper = frozen + 20;
-//      best = sum;
-//      bestFrozen = frozen;
-//      fprintf(stderr, "Update!!\n");
-//      fprintf(stderr, "Use: %d, Frozen: %d, Money: %d\n\n", bestUse, frozen, sum);
-//    }
-//  }
-//  OutputLog("log.txt", "mapUse[%d]=%3d;mapFrozen[%d]=%2d;//Money=%d\n", map, bestUse, map, bestFrozen, -best);
-//}
-
 int Test(Simulator &simulator, int map) {
   pair<int, int> result;
   vector<TowerInfo> old;
@@ -72,11 +13,11 @@ int Test(Simulator &simulator, int map) {
     
     vector<TowerInfo> output;
     if (map < 40) {
-      //output = RappidPut::RappidPut2(simulator.stages[map], map, level, true);
-      output = RappidPut::ReplayAttack(simulator.stages[map], map, level);
+      //output = FirstHalf::RappidPut2(simulator.stages[map], map, level, true);
+      output = FirstHalf::ReplayAttack(simulator.stages[map], map, level);
     } else {
-      //output = Tron::TronAI(simulator.stages[map], map, level, true);
-      output = Tron::ReplayAttack(simulator.stages[map], map, level);
+      //output = SecondHalf::TronAI(simulator.stages[map], map, level, true);
+      output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -124,8 +65,8 @@ int main() {
 
   int mapCnt;
   scanf("%d", &mapCnt);
-  int plife = 10;
-  int pmoney = 100;
+  //int plife = 10;
+  //int pmoney = 100;
   pair<int, int> ans(0, 0);
   REP(map, mapCnt) {
     MapInfo mapInfo;
@@ -147,9 +88,9 @@ int main() {
 
       vector<TowerInfo> output;
       if (map < 40) {
-        output = RappidPut::ReplayAttack(simulator.stages[map], map, level);
+        output = FirstHalf::ReplayAttack(simulator.stages[map], map, level);
       } else {
-        output = Tron::ReplayAttack(simulator.stages[map], map, level);
+        output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
       }
 
       // Print

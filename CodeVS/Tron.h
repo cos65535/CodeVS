@@ -7,7 +7,7 @@
 #include "Mask.h"
 #include "Misc.h"
 
-namespace Tron {
+namespace SecondHalf {
   const int dx[4] = { 1, 0, -1, 0 };
   const int dy[4] = { 0, 1, 0, -1 };
 
@@ -170,17 +170,17 @@ next:;
     return bestDist;
   }
 
+  struct Point {
+    int x, y;
+    int cost;
+    Point() {;}
+    Point(int x, int y, int cost) : x(x), y(y), cost(cost) {;}
+    bool operator<(const Point &rhs) const {
+      return cost > rhs.cost;
+    }
+  };
   void SetFrozenTower(const Field &field, int bestMask[51][51], int frozenCnt) {
     if (frozenCnt == 0) { return; }
-    struct Point {
-      int x, y;
-      double cost;
-      Point() {;}
-      Point(int x, int y, double cost) : x(x), y(y), cost(cost) {;}
-      bool operator<(const Point &rhs) const {
-        return cost > rhs.cost;
-      }
-    };
     const int w = field.w;
     const int h = field.h;
     int route[51][51];
@@ -303,8 +303,6 @@ mapUse[51]= 98;
       mapUse[map] = useCnt;
     }
 
-    const int h = mapInfo.h;
-    const int w = mapInfo.w;
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int best = -15000;
     vector<pair<int, vector<TowerInfo> > > ans;
@@ -314,24 +312,24 @@ mapUse[51]= 98;
     REP(iter, ITER_CNT) {
       int useCnt = mapUse[map] + rand() % 151 - 50;
       int bestMask[51][51];
-      int t1 = timeGetTime();
+      //int t1 = timeGetTime();
       CalcBestMask(field, bestMask, useCnt, 0);
       //PrintMask(field, bestMask);
-      int t2 = timeGetTime();
+      //int t2 = timeGetTime();
       EraseUneedTower(field, bestMask);
       //PrintMask(field, bestMask);
-      int t3 = timeGetTime();
+      //int t3 = timeGetTime();
       ExpandMask(field, bestMask, useCnt);
       //PrintMask(field, bestMask);
-      int t4 = timeGetTime();
+      //int t4 = timeGetTime();
       EraseUneedTower(field, bestMask);
       //PrintMask(field, bestMask);
-      int t5 = timeGetTime();
+      //int t5 = timeGetTime();
       SetFrozenTower(field, bestMask, (iter & 1) * (10 + rand() % 5));
       //PrintMask(field, bestMask);
-      int t6 = timeGetTime();
+      //int t6 = timeGetTime();
       int money = Simulation(mapInfo, map, bestMask, best);
-      int t7 = timeGetTime();
+      //int t7 = timeGetTime();
       //fprintf(stderr, "%d %d %d %d %d %d\n", t2 - t1, t3 - t2, t4 - t3, t5 - t4, t6 - t5, t7 - t6);
       //PrintMask(field, bestMask);
       ans[iter] = make_pair(money, MaskToTower(field, bestMask, mapInfo.levels[0].money));

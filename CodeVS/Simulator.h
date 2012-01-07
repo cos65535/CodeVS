@@ -121,7 +121,7 @@ struct Simulator {
   //1レベルのシミュレーション
 	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
     damage = min(damage, 10);
-    int start = timeGetTime();
+    //int start = timeGetTime();
 		pair<int, int> ret(0, 0);
 		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
     {
@@ -238,7 +238,7 @@ next:;
           }
         }
       }
-      if (deadCnt == enemyInfos.size()) {
+      if (deadCnt == (int)enemyInfos.size()) {
         break;
       }
 		}
@@ -260,7 +260,7 @@ end:
       stages[nstage].levels[nlevel].life = stages[stage].levels[level].life - ret.first;
       stages[nstage].levels[nlevel].money = stages[stage].levels[level].money + ret.second;
     }
-    int end = timeGetTime();
+    //int end = timeGetTime();
     //totalTime += end - start;
 		return ret;
 	}

@@ -6,7 +6,7 @@
 #include "Mask.h"
 #include "Misc.h"
 
-namespace RappidPut {
+namespace FirstHalf {
   struct Point {
     int x, y;
     double cost;
@@ -49,7 +49,7 @@ namespace RappidPut {
     if (stage <= 1) { return Kimeuchi(stage, level); }
     Field field(mapInfo);
     vector<TowerInfo> tower = mapInfo.levels[level].tower;
-    int money = mapInfo.levels[level].money;
+    //int money = mapInfo.levels[level].money;
     vector<TowerInfo> ret;
 
     int mapUse[40];

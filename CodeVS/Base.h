@@ -3,7 +3,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define NOMINMAX
 
-#pragma comment (lib, "winmm.lib")
 
 #include <stdio.h>
 #include <string.h>
@@ -19,8 +18,22 @@
 #include <set>
 #include <list>
 
+#ifdef WINDOWS
 #include <Windows.h>
 #include <mmsystem.h>
+#pragma comment (lib, "winmm.lib")
+#define FORIT(it, c) for (auto it= (c).begin(); it != (c).end(); it++)
+#endif
+
+#ifndef WINDOWS
+#include <sys/time.h>
+long long timeGetTime() {
+  timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec * 1000LL + t.tv_usec / 1000;
+}
+#define FORIT(it, c) for (__typeof((c).begin())it = (c).begin(); it != (c).end(); it++)
+#endif
 
 using namespace std;
 typedef long long ll;
@@ -32,7 +45,6 @@ static const double PI = acos(-1.0);
 #define REP(i, n) for (int i = 0; i < (int)(n); i++)
 #define FOR(i, s, n) for (int i = (s); i < (int)(n); i++)
 #define FOREQ(i, s, n) for (int i = (s); i <= (int)(n); i++)
-#define FORIT(it, c) for (auto it= (c).begin(); it != (c).end(); it++)
 #define MEMSET(v, h) memset((v), h, sizeof(v))
 
 static int OutputLogVa(const char *filename, const char *format, va_list ap)
@@ -46,7 +58,7 @@ static int OutputLogVa(const char *filename, const char *format, va_list ap)
 		fprintf(stderr, "can\'t open %s\n", filename);
 		return -1;
 	}
-	fprintf(fp, str);
+	fprintf(fp, "%s", str);
 	fclose(fp);
 
 	return 0;
