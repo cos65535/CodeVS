@@ -10,10 +10,10 @@ struct TowerInfo {
   TowerInfo() {;}
   TowerInfo(int x, int y, int level, int type) :
     x(x), y(y), level(level), type(type) {;}
-	int Money() const {
-		int mo[3] = { 10, 15, 20 };
-		return mo[type] * (level + 1) * (level + 2) / 2;
-	}
+  int Money() const {
+    int mo[3] = { 10, 15, 20 };
+    return mo[type] * (level + 1) * (level + 2) / 2;
+  }
   bool operator<(const TowerInfo &rhs) const { return false; }
   bool operator==(const TowerInfo &rhs) const {
     return x == rhs.x && y == rhs.y && level == rhs.level && type == rhs.type;
@@ -40,39 +40,39 @@ struct EnemyInfo {
 };
 
 struct LevelInfo {
-	vector<TowerInfo> tower;
-	vector<EnemyInfo> enemy;
-	int life;
-	int money;
-	LevelInfo() {;}
-	LevelInfo(FILE *fp) { Load(fp); }
-	void Release() {
-		tower.clear();
-		enemy.clear();
-		life = 0xdeadbeaf;
-		money = 0xdeadbeaf;
-	}
-	bool Load(FILE *fp) {
-		Release();
-		int towerCnt, enemyCnt;
-		int v = fscanf(fp, "%d %d %d %d", &life, &money, &towerCnt, &enemyCnt);
-		assert(v == 4);
-		REP(i, towerCnt) {
-			int x, y, a, c;
-			int v = fscanf(fp, "%d %d %d %d", &x, &y, &a, &c);
-			assert(v == 4);
-			tower.push_back(TowerInfo(x, y, a, c));
-		}
-		REP(i, enemyCnt) {
-			int x, y, t, l, s;
-			int v = fscanf(fp, "%d %d %d %d %d", &x, &y, &t, &l, &s);
-			assert(v == 5);
-			enemy.push_back(EnemyInfo(x, y, t, l, s));
-		}
-		v = fscanf(fp, " END");
+  vector<TowerInfo> tower;
+  vector<EnemyInfo> enemy;
+  int life;
+  int money;
+  LevelInfo() {;}
+  LevelInfo(FILE *fp) { Load(fp); }
+  void Release() {
+    tower.clear();
+    enemy.clear();
+    life = 0xdeadbeaf;
+    money = 0xdeadbeaf;
+  }
+  bool Load(FILE *fp) {
+    Release();
+    int towerCnt, enemyCnt;
+    int v = fscanf(fp, "%d %d %d %d", &life, &money, &towerCnt, &enemyCnt);
+    assert(v == 4);
+    REP(i, towerCnt) {
+      int x, y, a, c;
+      int v = fscanf(fp, "%d %d %d %d", &x, &y, &a, &c);
+      assert(v == 4);
+      tower.push_back(TowerInfo(x, y, a, c));
+    }
+    REP(i, enemyCnt) {
+      int x, y, t, l, s;
+      int v = fscanf(fp, "%d %d %d %d %d", &x, &y, &t, &l, &s);
+      assert(v == 5);
+      enemy.push_back(EnemyInfo(x, y, t, l, s));
+    }
+    v = fscanf(fp, " END");
     assert(v == 0);
-		return true;
-	}
+    return true;
+  }
 
   ////ÇøÇ™Ç§É^ÉèÅ[ÇÃåöÇƒï˚ÇÇµÇƒÇ‡ÇªÇÃÇ‹Ç‹ÇÃèoóÕÇÇ∑ÇÈ
   //void Print() {
@@ -88,12 +88,12 @@ struct LevelInfo {
 };
 
 struct MapInfo {
-	int w, h;
-	int field[51][51];
-	int levelCnt;
-	vector<LevelInfo> levels;
-	MapInfo() {;}
-	MapInfo(FILE *fp) { Load(fp); }
+  int w, h;
+  int field[51][51];
+  int levelCnt;
+  vector<LevelInfo> levels;
+  MapInfo() {;}
+  MapInfo(FILE *fp) { Load(fp); }
   MapInfo(const MapInfo &rhs) {
     w = rhs.w;
     h = rhs.h;
@@ -109,47 +109,47 @@ struct MapInfo {
     levels = rhs.levels;
     return *this;
   }
-	void Release() {
-		w = 0xdeadbeaf; h = 0xdeadbeaf;
-		MEMSET(field, 0x0f);
-		levels.clear();
-	}
-	bool LoadHeader(FILE *fp) {
-		Release();
-		bool ret = true;
-		int v = fscanf(fp, "%d %d", &w, &h);
-		assert(v == 2);
-		REP(y, h) {
-			REP(x, w) {
-				char c;
-				v = fscanf(fp, " %c ", &c);
-				assert(v == 1);
-				field[y][x] = c;
-			}
-		}
-		v = fscanf(fp, "%d", &levelCnt);
-		assert(v == 1);
-		v = fscanf(fp, " END");
-		assert(v == 0);
+  void Release() {
+    w = 0xdeadbeaf; h = 0xdeadbeaf;
+    MEMSET(field, 0x0f);
+    levels.clear();
+  }
+  bool LoadHeader(FILE *fp) {
+    Release();
+    bool ret = true;
+    int v = fscanf(fp, "%d %d", &w, &h);
+    assert(v == 2);
+    REP(y, h) {
+      REP(x, w) {
+        char c;
+        v = fscanf(fp, " %c ", &c);
+        assert(v == 1);
+        field[y][x] = c;
+      }
+    }
+    v = fscanf(fp, "%d", &levelCnt);
+    assert(v == 1);
+    v = fscanf(fp, " END");
+    assert(v == 0);
     return ret;
-	}
-	bool LoadLevel(FILE *fp) {
-		assert((int)levels.size() < levelCnt);
-		bool ret = true;
-		LevelInfo info;
-		ret &= info.Load(fp);
-		levels.push_back(info);
-		return ret;
-	}
-	bool Load(FILE *fp) {
-		Release();
-		bool ret = true;
-		ret = LoadHeader(fp);
-		REP(i, levelCnt) {
-			LoadLevel(fp);
-		}
-		return ret;
-	}
+  }
+  bool LoadLevel(FILE *fp) {
+    assert((int)levels.size() < levelCnt);
+    bool ret = true;
+    LevelInfo info;
+    ret &= info.Load(fp);
+    levels.push_back(info);
+    return ret;
+  }
+  bool Load(FILE *fp) {
+    Release();
+    bool ret = true;
+    ret = LoadHeader(fp);
+    REP(i, levelCnt) {
+      LoadLevel(fp);
+    }
+    return ret;
+  }
   //void Print() {
   //  printf("%d %d\n", w, h);
   //  REP(y, h) {

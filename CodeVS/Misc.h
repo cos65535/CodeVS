@@ -12,7 +12,7 @@ vector<TowerInfo> LevelDown(const MapInfo &mapInfo, int map, vector<TowerInfo> i
   else { map = 0; }
   simulator.stages.resize(map);
   simulator.stages.push_back(mapInfo);
-  
+
   Field field(mapInfo);
   field.PutTower(iniTowers);
   int route[51][51];

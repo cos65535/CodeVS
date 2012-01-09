@@ -64,10 +64,10 @@ namespace SecondHalf {
           bestMask[y][x] = 0;
           if (dist > bestDist) {
             bestDist = dist;
-          //} else {
-            tx = x;
-            ty = y;
-          }
+            //} else {
+          tx = x;
+          ty = y;
+        }
         }
       }
       if (tx == -1) { break; }
@@ -286,18 +286,18 @@ next:;
     if (level != 0) { return vector<TowerInfo>(); }
     int mapUse[80];
     REP(i, 80) { mapUse[i] = 150; }
-mapUse[40]= 24;
-mapUse[41]= 42;
-mapUse[42]= 51;
-mapUse[43]= 82;
-mapUse[44]= 49;
-mapUse[45]= 78;
-mapUse[46]= 48;
-mapUse[47]=142;
-mapUse[48]= 59;
-mapUse[49]=110;
-mapUse[50]= 69;
-mapUse[51]= 98;
+    mapUse[40]= 24;
+    mapUse[41]= 42;
+    mapUse[42]= 51;
+    mapUse[43]= 82;
+    mapUse[44]= 49;
+    mapUse[45]= 78;
+    mapUse[46]= 48;
+    mapUse[47]=142;
+    mapUse[48]= 59;
+    mapUse[49]=110;
+    mapUse[50]= 69;
+    mapUse[51]= 98;
 
     if (useCnt != -1) {
       mapUse[map] = useCnt;
@@ -421,7 +421,7 @@ mapUse[51]= 98;
 
   vector<TowerInfo> ReplayAttack(const MapInfo &mapInfo, const int map, const int level) {
     if (level != 0) { return vector<TowerInfo>(); }
-    Field field(mapInfo.field, mapInfo.w, mapInfo.h);
+    Field field(mapInfo);
     char filename[100];
     sprintf(filename, "replay/%02d.txt", map);
     vector<MaskInfo> answer = LoadMasks(filename, mapInfo);
@@ -440,7 +440,11 @@ mapUse[51]= 98;
       ans[i] = make_pair(money, MaskToTower(field, answer[i].mask, mapInfo.levels[0].money));
     }
     sort(ans.rbegin(), ans.rend());
-    ans[0].second = LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
+    field.PutTower(ans[0].second);
+    int mask[51][51];
+    MEMSET(mask, 0);
+    PrintMask(field, mask);
+    //ans[0].second = LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
     //ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
     //ans[0].first = -CalcMoney(ans[0].second);
 

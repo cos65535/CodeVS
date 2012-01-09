@@ -4,13 +4,14 @@
 #include "Structure.h"
 #include "RappidPut.h"
 #include "Tron.h"
+#include "Final.h"
 
 int Test(Simulator &simulator, int map) {
   pair<int, int> result;
   vector<TowerInfo> old;
   REP(level, 25) {
-//    fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
-    
+    //    fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
+
     vector<TowerInfo> output;
     if (map < 40) {
       //output = FirstHalf::RappidPut2(simulator.stages[map], map, level, true);
@@ -18,6 +19,7 @@ int Test(Simulator &simulator, int map) {
     } else {
       //output = SecondHalf::TronAI(simulator.stages[map], map, level, true);
       output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
+      output = Final::AI(simulator.stages[map], map, level);
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -36,8 +38,8 @@ int main() {
   Simulator simulator("inputs/input.txt");
 #ifndef CONTEST
   int start = timeGetTime();
-  int sum = 100;
-  FOR(map, 0, 80) {
+  int sum = 520000;
+  FOR(map, 40, 80) {
     if (map == 40) { sum /= 2; }
     sum += Test(simulator, map);
     printf("TotalMoney: %d\n", sum);

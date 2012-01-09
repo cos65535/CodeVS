@@ -50,27 +50,27 @@ static const double PI = acos(-1.0);
 static int OutputLogVa(const char *filename, const char *format, va_list ap)
 {
   assert(filename != NULL && filename[0] != '\0');
-	char str[10000];
-	vsnprintf(str, 9999, format, ap);
-	
-	FILE *fp = fopen(filename, "a");
-	if (fp == NULL) {
-		fprintf(stderr, "can\'t open %s\n", filename);
-		return -1;
-	}
-	fprintf(fp, "%s", str);
-	fclose(fp);
+  char str[10000];
+  vsnprintf(str, 9999, format, ap);
 
-	return 0;
+  FILE *fp = fopen(filename, "a");
+  if (fp == NULL) {
+    fprintf(stderr, "can\'t open %s\n", filename);
+    return -1;
+  }
+  fprintf(fp, "%s", str);
+  fclose(fp);
+
+  return 0;
 }
 
 int OutputLog(const char *filename, const char *format, ...)
 {
-	va_list ap;
-	va_start(ap, format);
-	int result = OutputLogVa(filename, format, ap);
-	va_end(ap);
-	return result;
+  va_list ap;
+  va_start(ap, format);
+  int result = OutputLogVa(filename, format, ap);
+  va_end(ap);
+  return result;
 }
 
 
@@ -78,7 +78,6 @@ int OutputLog(const char *filename, const char *format, ...)
 template<class T>
 T square(T x) { return x * x; }
 
-//cppÉtÉ@ÉCÉãçÏÇÈÇÃÇﬂÇÒÇ«Ç¢
 void PrintMatrix(const int mat[51][51], int w, int h) {
   REP(y, h) {
     REP(x, w) {

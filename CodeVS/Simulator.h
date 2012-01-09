@@ -5,63 +5,63 @@
 #include "Structure.h"
 
 struct Simulator {
-	struct Tower {
-		int x;
-		int y;
-		int level;
-		int type;
-		int charge;
-		vector<int> target;
-		Tower(TowerInfo info) : x(info.x), y(info.y), level(info.level), type(info.type), charge(0) {;}
-		int Attack() const {
-			int at[3] = { 10, 20, 3 };
-			return at[type] * (level + 1);
-		}
-		int Wait() const {
-			if (type == 2) { return 20; }
-			int wa[2] = { 10, 20 };
-			return wa[type] - 2 * level;
-		}
-		int Range2() const {
-			int ra[3] = { 4, 5, 2 };
-			return square(ra[type] + level);
-		}
-	};
-	struct Enemy {
-		EnemyInfo info;
+  struct Tower {
+    int x;
+    int y;
+    int level;
+    int type;
+    int charge;
+    vector<int> target;
+    Tower(TowerInfo info) : x(info.x), y(info.y), level(info.level), type(info.type), charge(0) {;}
+    int Attack() const {
+      int at[3] = { 10, 20, 3 };
+      return at[type] * (level + 1);
+    }
+    int Wait() const {
+      if (type == 2) { return 20; }
+      int wa[2] = { 10, 20 };
+      return wa[type] - 2 * level;
+    }
+    int Range2() const {
+      int ra[3] = { 4, 5, 2 };
+      return square(ra[type] + level);
+    }
+  };
+  struct Enemy {
+    EnemyInfo info;
     int index;
-		int x;
-		int y;
-		int life;
-		int wait;
-		int charge;
-		bool alive;
-		Enemy(EnemyInfo info, int index) : info(info), index(index), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
-	};
+    int x;
+    int y;
+    int life;
+    int wait;
+    int charge;
+    bool alive;
+    Enemy(EnemyInfo info, int index) : info(info), index(index), x(info.x), y(info.y), life(info.life), wait(info.speed), charge(0), alive(true) {;}
+  };
 
-	vector<MapInfo> stages;
+  vector<MapInfo> stages;
   //static int totalTime;
-	Simulator() {;}
-	Simulator(const char *filename) { Load(filename); }
-	void Release() {
-		stages.clear();
-	}
-	bool Load(const char *filename) {
-		Release();
-		bool ret = true;
-		FILE *fp = fopen(filename, "r");
-		assert(fp != NULL);
-		int stageCnt = -1;
-		int v = fscanf(fp, "%d", &stageCnt);
-		assert(v == 1);
-		REP(i, stageCnt) {
-			MapInfo stage;
-			ret &= stage.Load(fp);
-			stages.push_back(stage);
-		}
-		fclose(fp);
-		return ret;
-	}
+  Simulator() {;}
+  Simulator(const char *filename) { Load(filename); }
+  void Release() {
+    stages.clear();
+  }
+  bool Load(const char *filename) {
+    Release();
+    bool ret = true;
+    FILE *fp = fopen(filename, "r");
+    assert(fp != NULL);
+    int stageCnt = -1;
+    int v = fscanf(fp, "%d", &stageCnt);
+    assert(v == 1);
+    REP(i, stageCnt) {
+      MapInfo stage;
+      ret &= stage.Load(fp);
+      stages.push_back(stage);
+    }
+    fclose(fp);
+    return ret;
+  }
 
   //void SkipInput() {
   //  while (scanf("%*s") != EOF);
@@ -97,33 +97,33 @@ struct Simulator {
   //}
 
   //1マップのシミューレーション
-	pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers, int damage = 10) {
+  pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers, int damage = 10) {
     damage = min(damage, 10);
     vector<TowerInfo> nothing;
-		pair<int, int> ret(0, 0);
-		REP(i, stages[stage].levels.size()) {
-			pair<int, int> nret;
+    pair<int, int> ret(0, 0);
+    REP(i, stages[stage].levels.size()) {
+      pair<int, int> nret;
       if (i == 0) {
         nret = LevelSimulation(stage, i, towers, damage - nret.first);
       } else {
         nret = LevelSimulation(stage, i, nothing, damage - nret.first);
       }
-			ret.first += nret.first;
-			ret.second += nret.second;
+      ret.first += nret.first;
+      ret.second += nret.second;
       if (ret.first >= damage) {
         ret.first = 10;
         break;
       }
-		}
-		return ret;
-	}
+    }
+    return ret;
+  }
 
   //1レベルのシミュレーション
-	pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
+  pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
     damage = min(damage, 10);
     //int start = timeGetTime();
-		pair<int, int> ret(0, 0);
-		Field field(stages[stage].field, stages[stage].w, stages[stage].h);
+    pair<int, int> ret(0, 0);
+    Field field(stages[stage].field, stages[stage].w, stages[stage].h);
     {
       int nret = field.PutTower(stages[stage].levels[level].tower);
       if (nret == -1) {
@@ -131,17 +131,17 @@ struct Simulator {
         return ret;
       }
       nret = field.PutTower(towerInfos);
-		  if (nret == -1) {
-			  ret.first = -1000;
-			  return ret;
-		  }
+      if (nret == -1) {
+        ret.first = -1000;
+        return ret;
+      }
       ret.second -= nret;
     }
 
-		vector<EnemyInfo> enemyInfos = stages[stage].levels[level].enemy;
-		stable_sort(enemyInfos.begin(), enemyInfos.end());
-		vector<Enemy> enemys;
-		vector<Tower> towers;
+    vector<EnemyInfo> enemyInfos = stages[stage].levels[level].enemy;
+    stable_sort(enemyInfos.begin(), enemyInfos.end());
+    vector<Enemy> enemys;
+    vector<Tower> towers;
     REP(y, field.h) {
       REP(x, field.w) {
         int type = field.field[y][x] / 1000 - 1;
@@ -156,25 +156,25 @@ struct Simulator {
     int deadCnt = 0;
     for (int frame = 0; frame < (1 << 30); frame++) {
       //移動させる
-			const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
-			const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
-			FORIT(it, enemys) {
+      const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
+      const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+      FORIT(it, enemys) {
         if (!it->alive) { continue; }
-				it->charge++;
-				int dir = field.move[it->y][it->x];
-				int need = it->wait * (dir % 2 == 0 ? 10 : 14) / 10;
-				if (need == it->charge) {
-					it->x += dx[dir];
-					it->y += dy[dir];
-					it->charge = 0;
-				}
-			}
+        it->charge++;
+        int dir = field.move[it->y][it->x];
+        int need = it->wait * (dir % 2 == 0 ? 10 : 14) / 10;
+        if (need == it->charge) {
+          it->x += dx[dir];
+          it->y += dy[dir];
+          it->charge = 0;
+        }
+      }
 
       //敵を追加
-			while (index < (int)enemyInfos.size() && enemyInfos[index].t == frame) {
-				enemys.push_back(Enemy(enemyInfos[index], index));
-				index++;
-			}
+      while (index < (int)enemyInfos.size() && enemyInfos[index].t == frame) {
+        enemys.push_back(Enemy(enemyInfos[index], index));
+        index++;
+      }
 
       //タワーの処理
       FORIT(it2, enemys) {
@@ -241,7 +241,7 @@ next:;
       if (deadCnt == (int)enemyInfos.size()) {
         break;
       }
-		}
+    }
 end:
 
     int nstage = stage;
@@ -262,7 +262,7 @@ end:
     }
     //int end = timeGetTime();
     //totalTime += end - start;
-		return ret;
-	}
+    return ret;
+  }
 };
 //int Simulator::totalTime = 0;

@@ -54,7 +54,7 @@ namespace FirstHalf {
 
     int mapUse[40];
     REP(i, 40) { mapUse[i] = 1; }
-    
+
     int w = field.w;
     int h = field.h;
     bool visit[51][51];

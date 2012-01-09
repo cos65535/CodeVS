@@ -22,10 +22,12 @@ void PrintMask(const Field &field, const int mask[51][51]) {
         int v = field.field[y][x];
         if (v == 1100) { v = '2'; }
         if (v == 1500) { v = '3'; }
+        if (v >= 3000) { v = 'F'; }
         printf("%c", v);
       } else if (mask[y][x] != 0) {
-        int v = '4';
-        if (mask[y][x] == 15) { v = '5'; }
+        int v = '2';
+        if (mask[y][x] == 15) { v = '3'; }
+        if (mask[y][x] >= 30) { v = 'F'; }
         printf("%c", v);
       } else {
         printf(".");
