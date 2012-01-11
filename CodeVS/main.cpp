@@ -18,8 +18,12 @@ int Test(Simulator &simulator, int map) {
       output = FirstHalf::ReplayAttack(simulator.stages[map], map, level);
     } else {
       //output = SecondHalf::TronAI(simulator.stages[map], map, level, true);
-      output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
-      output = Final::AI(simulator.stages[map], map, level);
+      //output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
+      if (map != 0 && map != 40) {
+        output = Final::AI(simulator.stages[map], simulator.stages[map - 1], map, level);
+      } else {
+        output = Final::AI(simulator.stages[map], simulator.stages[map], map, level);
+      }
     }
     pair<int, int> nret = simulator.LevelSimulation(map, level, output);
     //FORIT(it, output) {
@@ -59,14 +63,15 @@ int main() {
   //}
   //printf("Simulation Time: %d.%d\n", simulator.totalTime);
   int end = timeGetTime();
-  printf("Total Time: %d(sec)\n", (end - start) / 1000);
+  printf("Total Time: %d.%d(sec)\n", (end - start) / 1000, (end - start) % 1000);
   puts("Please Enter Key");
   getchar();
   return 0;
 #endif
 
   int mapCnt;
-  scanf("%d", &mapCnt);
+  int v = scanf("%d", &mapCnt);
+  assert(v == 1);
   //int plife = 10;
   //int pmoney = 100;
   pair<int, int> ans(0, 0);

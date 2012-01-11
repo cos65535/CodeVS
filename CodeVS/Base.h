@@ -17,6 +17,7 @@
 #include <map>
 #include <set>
 #include <list>
+#include <bitset>
 
 #ifdef WINDOWS
 #include <Windows.h>

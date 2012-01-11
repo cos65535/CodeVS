@@ -88,7 +88,8 @@ vector<MaskInfo> LoadMasks(const char *filename, const MapInfo &mapInfo) {
     info.money = money;
     REP(y, h) {
       REP(x, w) {
-        fscanf(fp, "%d", &info.mask[y][x]);
+        int v = fscanf(fp, "%d", &info.mask[y][x]);
+        assert(v == 1);
       }
     }
     if (field.OK2(info.mask)) {

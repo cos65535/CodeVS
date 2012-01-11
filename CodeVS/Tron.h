@@ -443,7 +443,7 @@ next:;
     field.PutTower(ans[0].second);
     int mask[51][51];
     MEMSET(mask, 0);
-    PrintMask(field, mask);
+    //PrintMask(field, mask);
     //ans[0].second = LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);
     //ans[0].second = LevelDown(mapInfo, map, ans[0].second, 0);
     //ans[0].first = -CalcMoney(ans[0].second);
