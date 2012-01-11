@@ -241,7 +241,7 @@ next:;
   }
 
   bool calcCandidate;
-  int Simulation2(const MapInfo &mapInfo, const int map, const int level, int mask[FS][FS]) {
+  int Simulation(const MapInfo &mapInfo, const int map, const int level, int mask[FS][FS], bool strict) {
 
     const int w = mapInfo.w;
     const int h = mapInfo.h;
@@ -315,7 +315,13 @@ next:;
 
       //PrintMask(field, lmask);
       vector<TowerInfo> tower = MaskToTower(field, lmask, 1 << 20);
-      pair<int, int> ans = simulator.LevelSimulation(false, 0, level, tower, 1);
+      pair<int, int> ans;
+      if (strict) {
+        ans = simulator.LevelSimulation(false, 0, level, tower, 1);
+      } else {
+        if (hi - lo < 2) { break; }
+        ans = simulator.LevelSimulationAproximate(false, 0, level, tower, 1);
+      }
       ans.second += -ans.first * 50000;
       //cout << mid << " " << ans.first << " " << ans.second << endl;
       if (ans.second > best || best < -50000) {
@@ -340,7 +346,7 @@ next:;
     if (level != 0) {
       int mask[FS][FS];
       MEMSET(mask, 0);
-      Simulation2(mapInfo, map, level, mask);
+      Simulation(mapInfo, map, level, mask, true);
       return MaskToTower(field, mask, mapInfo.levels[level].money);
     }
 
@@ -382,7 +388,7 @@ next:;
         SetFrozenTower(field, maskInfos[iter].mask, 10);
       }
       int t5 = timeGetTime();
-      maskInfos[iter].money = Simulation2(mousou, map, 0, maskInfos[iter].mask);
+      maskInfos[iter].money = Simulation(mousou, map, 0, maskInfos[iter].mask, false);
       int t6 = timeGetTime();
       expandT += t4 - t3;
       simulatorT += t6 - t5;
@@ -391,7 +397,7 @@ next:;
     calcCandidate = false;
     sort(maskInfos.rbegin(), maskInfos.rend());
     memcpy(bestMask, maskInfos[0].mask, sizeof(int) * FS * FS);
-    Simulation2(mapInfo, map, level, bestMask);
+    Simulation(mapInfo, map, level, bestMask, true);
     //PrintMask(field, bestMask);
     //int t7 = timeGetTime();
     //PrintMask(field, bestMask);
