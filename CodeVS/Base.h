@@ -79,7 +79,9 @@ int OutputLog(const char *filename, const char *format, ...)
 template<class T>
 T square(T x) { return x * x; }
 
-void PrintMatrix(const int mat[51][51], int w, int h) {
+const int FS = 32;    //フィールドサイズ
+
+void PrintMatrix(const int mat[FS][FS], int w, int h) {
   REP(y, h) {
     REP(x, w) {
       fprintf(stderr, "%d ", mat[y][x]);

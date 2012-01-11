@@ -21,8 +21,8 @@ struct Field {
 
     int w;
     int h;
-    int field[51][51];
-    int move[51][51];
+    int field[FS][FS];
+    int move[FS][FS];
     struct Point {
       int x;
       int y;
@@ -45,14 +45,14 @@ struct Field {
       memcpy(this->move, rhs.move, sizeof(this->move));
       return *this;
     }
-    Field(const int f[51][51], int W, int H) {
+    Field(const int f[FS][FS], int W, int H) {
       Create(f, W, H);
     }
     Field (const MapInfo &mapInfo) {
       Create(mapInfo.field, mapInfo.w, mapInfo.h);
     }
 
-    void Create(const int f[51][51], int W, int H) {
+    void Create(const int f[FS][FS], int W, int H) {
       w = W;
       h = H;
       memcpy(field, f, sizeof(field));
@@ -84,22 +84,22 @@ struct Field {
         }
         field[it->y][it->x] = (it->type + 1) * 1000 + (it->level + 1) * 100;
       }
-      int mask[51][51];
+      int mask[FS][FS];
       MEMSET(mask, 0);
       CalcMove(mask, move);
       return ret;
     }
 
-    void CalcMove(const int mask[51][51], int move[51][51]) const {
+    void CalcMove(const int mask[FS][FS], int move[FS][FS]) const {
       priority_queue<DistPoint> que;
       FORIT(it, gs) {
         que.push(DistPoint(it->x, it->y, 0, 0));
       }
-      bool visit[51][51];
-      int dist[51][51];
+      bool visit[FS][FS];
+      int dist[FS][FS];
       MEMSET(visit, false);
       MEMSET(dist, 0x0f);
-      memset(move, 0x0f, sizeof(int) * 51 * 51);
+      memset(move, 0x0f, sizeof(int) * FS * FS);
       const int dx[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
       const int dy[8] = { 0, 1, 1, 1, 0, -1, -1, -1 };
       while (!que.empty()) {
@@ -112,11 +112,11 @@ struct Field {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           int ndist = p.dist + 2 + dir % 2;
-          if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx]) { continue; }
+          if (mask[ny][nx] || (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g')) { continue; }
           if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
           if (dir % 2 == 1) {
-            if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x]) { continue; }
-            if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx]) { continue; }
+            if (mask[ny][p.x] || (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g')) { continue; }
+            if (mask[p.y][nx] || (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g')) { continue; }
           }
           dist[ny][nx] = ndist;
           que.push(DistPoint(nx, ny, ndist, dir));
@@ -124,9 +124,9 @@ struct Field {
       }
     }
 
-    int CalcDist(const int mask[51][51]) const {
-      bool visit[51][51];
-      int dist[51][51];
+    int CalcDist(const int mask[FS][FS]) const {
+      bool visit[FS][FS];
+      int dist[FS][FS];
       MEMSET(visit, false);
       MEMSET(dist, 0x0f);
       priority_queue<DistPoint> que;
@@ -151,11 +151,11 @@ struct Field {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           int ndist = p.dist + 10 + (dir & 1) * 4;
-          if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+          if (mask[ny][nx] != 0 || (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g')) { continue; }
           if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
           if (dir % 2 == 1) {
-            if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x] != 0) { continue; }
-            if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx] != 0) { continue; }
+            if (mask[ny][p.x] != 0 || (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g')) { continue; }
+            if (mask[p.y][nx] != 0 || (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g')) { continue; }
           }
           dist[ny][nx] = ndist;
           que.push(DistPoint(nx, ny, ndist, dir));
@@ -165,10 +165,10 @@ struct Field {
       return ret;
     }
 
-    int CalcDist2(const int mask[51][51], int dist[51][51]) const {
-      bool visit[51][51];
+    int CalcDist2(const int mask[FS][FS], int dist[FS][FS]) const {
+      bool visit[FS][FS];
       MEMSET(visit, false);
-      memset(dist, 0x0f, sizeof(int) * 51 * 51);
+      memset(dist, 0x0f, sizeof(int) * FS * FS);
       priority_queue<DistPoint> que;
       FORIT(it, gs) {
         que.push(DistPoint(it->x, it->y, 0, 0));
@@ -191,11 +191,11 @@ struct Field {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           int ndist = p.dist + 10 + (dir & 1) * 4;
-          if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+          if (mask[ny][nx] != 0 || (field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g')) { continue; }
           if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
           if (dir % 2 == 1) {
-            if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x] != 0) { continue; }
-            if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx] != 0) { continue; }
+            if (mask[ny][p.x] != 0 || (field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g')) { continue; }
+            if (mask[p.y][nx] != 0 || (field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g')) { continue; }
           }
           dist[ny][nx] = ndist;
           que.push(DistPoint(nx, ny, ndist, dir));
@@ -205,9 +205,9 @@ struct Field {
       return ret;
     }
 
-    ll CalcDist3(const int mask[51][51]) const {
-      bool visit[51][51];
-      int dist[51][51];
+    ll CalcDist3(const int mask[FS][FS]) const {
+      bool visit[FS][FS];
+      int dist[FS][FS];
       MEMSET(visit, false);
       MEMSET(dist, 0x0f);
       priority_queue<DistPoint> que;
@@ -234,11 +234,11 @@ struct Field {
           int nx = p.x + dx[dir];
           int ny = p.y + dy[dir];
           int ndist = p.dist + 10 + (dir & 1) * 4;
-          if ((field[ny][nx] != '0' && field[ny][nx] != 's' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
-          if (visit[ny][nx] || dist[ny][nx] < ndist) { continue; }
-          if (dir % 2 == 1) {
-            if ((field[ny][p.x] != '0' && field[ny][p.x] != 's' && field[ny][p.x] != 'g') || mask[ny][p.x] != 0) { continue; }
-            if ((field[p.y][nx] != '0' && field[p.y][nx] != 's' && field[p.y][nx] != 'g') || mask[p.y][nx] != 0) { continue; }
+          if (mask[ny][nx] != 0 || field[ny][nx] == '1') { continue; }
+          if (dist[ny][nx] < ndist) { continue; }
+          if (dir & 1) {
+            if (mask[ny][p.x] != 0 || field[ny][p.x] == '1') { continue; }
+            if (mask[p.y][nx] != 0 || field[p.y][nx] == '1') { continue; }
           }
           dist[ny][nx] = ndist;
           que.push(DistPoint(nx, ny, ndist, dir));
@@ -247,8 +247,8 @@ struct Field {
       return ret;
     }
 
-    bool OK2(const int mask[51][51]) const {
-      bool visit[51][51];
+    bool OK2(const int mask[FS][FS]) const {
+      bool visit[FS][FS];
       MEMSET(visit, false);
       const int dx[4] = { 1, 0, -1, 0 };
       const int dy[4] = { 0, 1, 0, -1 };
@@ -268,24 +268,23 @@ struct Field {
               REP(dir, 4) {
                 int nx = x + dx[dir];
                 int ny = y + dy[dir];
-                if ((field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g') || mask[ny][nx] != 0) { continue; }
+                if (mask[ny][nx] != 0 || (field[ny][nx] != 's' && field[ny][nx] != '0' && field[ny][nx] != 'g')) { continue; }
                 if (visit[ny][nx]) { continue; }
                 visit[ny][nx] = true;
                 que.push((ny << 10) | nx);
               }
             }
             if (!ok) { return false; }
-            //if (!dfs(mask, visit, x, y)) { return false; }
           }
         }
       }
       return true;
     }
 
-    inline bool Movable(const int mask[51][51], int x, int y) const {
+    inline bool Movable(const int mask[FS][FS], int x, int y) const {
       return !(x < 0 || x >= w || y < 0 || y >= h || field[y][x] == '1' || field[y][x] >= 1100 || mask[y][x] > 0);
     }
-    bool OK(int mask[51][51], int bx, int by) const {
+    bool OK(int mask[FS][FS], int bx, int by) const {
       if (mask[by][bx] != 0 || field[by][bx] != '0') { return false; }
       mask[by][bx] = 1;
       {
@@ -369,7 +368,7 @@ struct Field {
 
       if (!OK2(mask)) { goto ng; }
 ok:
-      assert(OK2(mask));
+      //assert(OK2(mask));
       mask[by][bx] = 0;
       return true;
 ng:;
@@ -377,17 +376,17 @@ ng:;
      return false;
     }
 
-    void CalcEnemyRoute(const int mask[51][51], int route[51][51]) const {
-      int move[51][51];
+    void CalcEnemyRoute(const int mask[FS][FS], int route[FS][FS]) const {
+      int move[FS][FS];
       CalcMove(mask, move);
-      memset(route, 0, sizeof(int) * 51 * 51);
+      memset(route, 0, sizeof(int) * FS * FS);
       const int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
       const int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
       FORIT(it, ss) {
         int x = it->x;
         int y = it->y;
         while (field[y][x] != 'g') {
-          route[y][x] |= 2;
+          route[y][x]++;
           int nx = x + dx[move[y][x]];
           int ny = y + dy[move[y][x]];
           x = nx;
@@ -396,8 +395,8 @@ ng:;
       }
     }
 
-    void CalcSum(const int mask[51][51], int sums[51][51]) const {
-      int route[51][51];
+    void CalcSum(const int mask[FS][FS], int sums[FS][FS]) const {
+      int route[FS][FS];
       CalcEnemyRoute(mask, route);
       memset(sums, 0, sizeof(sums));
       REP(sy, h) {

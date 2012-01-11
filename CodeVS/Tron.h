@@ -11,7 +11,7 @@ namespace SecondHalf {
   const int dx[4] = { 1, 0, -1, 0 };
   const int dy[4] = { 0, 1, 0, -1 };
 
-  int Put(const Field &field, int mask[51][51], int x, int y, int &use, int probability) {
+  int Put(const Field &field, int mask[FS][FS], int x, int y, int &use, int probability) {
     if (field.field[y][x] != '0') { return use; }
     if (mask[y][x] != 0) { return use; }
     mask[y][x] = 11;
@@ -23,7 +23,7 @@ namespace SecondHalf {
   }
 
 
-  int EraseUneedTower(const Field &field, int bestMask[51][51]) {
+  int EraseUneedTower(const Field &field, int bestMask[FS][FS]) {
     int cnt = 0;
     int bestDist = field.CalcDist(bestMask);
     REP(y, field.h) {
@@ -42,12 +42,12 @@ namespace SecondHalf {
     return cnt;
   }
 
-  int ExpandMask(const Field &field, int bestMask[51][51], int useCnt) {
+  int ExpandMask(const Field &field, int bestMask[FS][FS], int useCnt) {
     const int h = field.h;
     const int w = field.w;
     int use = CalcUse(field, bestMask);
     int bestDist = field.CalcDist(bestMask);
-    bool ban[51][51];
+    bool ban[FS][FS];
     MEMSET(ban, false);
     REP(iter, 300) {
       if (use >= useCnt) { break; }
@@ -78,11 +78,11 @@ namespace SecondHalf {
   }
 
 
-  int CalcMask(int iter, const Field &field, int mask[51][51], int useCnt, int probability) {
+  int CalcMask(int iter, const Field &field, int mask[FS][FS], int useCnt, int probability) {
     int dist = 0;
     int use = 0;
     int target = rand() % field.gs.size();
-    memset(mask, 0, sizeof(int) * 51 * 51);
+    memset(mask, 0, sizeof(int) * FS * FS);
     //targetˆÈŠO‚ð–„‚ß‚é
     REP(i, field.gs.size()) {
       if (i == target) { continue; }
@@ -155,15 +155,15 @@ next:;
     return dist;
   }
 
-  int CalcBestMask(const Field &field, int bestMask[51][51], int useCnt, int probability) {
+  int CalcBestMask(const Field &field, int bestMask[FS][FS], int useCnt, int probability) {
     int bestDist = -1;
-    memset(bestMask, 0x0f, sizeof(int) * 51 * 51);
+    memset(bestMask, 0x0f, sizeof(int) * FS * FS);
     REP(iter, 200) {
-      int mask[51][51];
+      int mask[FS][FS];
       int dist = CalcMask(rand() % 3600, field, mask, useCnt, probability);
       // best‚ðXV
       if (dist > bestDist) {
-        memcpy(bestMask, mask, sizeof(int) * 51 * 51);
+        memcpy(bestMask, mask, sizeof(int) * FS * FS);
         bestDist = dist;
       }
     }
@@ -179,11 +179,11 @@ next:;
       return cost > rhs.cost;
     }
   };
-  void SetFrozenTower(const Field &field, int bestMask[51][51], int frozenCnt) {
+  void SetFrozenTower(const Field &field, int bestMask[FS][FS], int frozenCnt) {
     if (frozenCnt == 0) { return; }
     const int w = field.w;
     const int h = field.h;
-    int route[51][51];
+    int route[FS][FS];
     field.CalcEnemyRoute(bestMask, route);
     int tx = -1;
     int ty = -1;
@@ -200,7 +200,7 @@ next:;
     priority_queue<Point> que;
     que.push(Point(tx, ty, 0));
     int cnt = 0;
-    bool visit[51][51];
+    bool visit[FS][FS];
     MEMSET(visit, false);
     while (!que.empty()) {
       Point p = que.top();
@@ -226,17 +226,16 @@ next:;
     }
   }
 
-  int Simulation(const MapInfo &mapInfo, const int map, int mask[51][51], int best) {
+  int Simulation(const MapInfo &mapInfo, const int map, int mask[FS][FS], int best) {
     const int w = mapInfo.w;
     const int h = mapInfo.h;
     Simulator simulator;
-    simulator.stages.resize(40);
     simulator.stages.push_back(mapInfo);
 
-    int iniMask[51][51];
-    memcpy(iniMask, mask, sizeof(int) * 51 * 51);
+    int iniMask[FS][FS];
+    memcpy(iniMask, mask, sizeof(int) * FS * FS);
 
-    int sums[51][51];
+    int sums[FS][FS];
     MEMSET(sums, 0);
     Field field(mapInfo.field, w, h);
     field.CalcSum(mask, sums);
@@ -245,7 +244,7 @@ next:;
     int lastLevel = 0;
     while (true) {
       vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[0].money);
-      pair<int, int> ans = simulator.LevelSimulation(40, lastLevel, tower);
+      pair<int, int> ans = simulator.LevelSimulation(false, 0, lastLevel, tower);
       if ((lastLevel == 24 && ans.first == 0) || ret + ans.second < best) { break; }
       if (ans.first == 0) {
         lastLevel++;
@@ -270,14 +269,15 @@ next:;
             }
           }
         }
-        if (bestSum == -1) { break; }
+        if (bestSum == -1) { goto end; }
         mask[ty][tx] = 15;
       }
       //PrintMask(field, mask);
     }
+end:
     field = Field(mapInfo.field, w, h);
     vector<TowerInfo> tower = MaskToTower(field, mask, mapInfo.levels[0].money);
-    pair<int, int> ans = simulator.MapSimulation(40, tower);
+    pair<int, int> ans = simulator.MapSimulation(false, 0, tower);
     ans.second += -ans.first * 5000;
     return ans.second;
   }
@@ -304,14 +304,14 @@ next:;
     }
 
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
-    int best = -15000;
+    int best = -1500000;
     vector<pair<int, vector<TowerInfo> > > ans;
-    const int ITER_CNT = 3000;
+    const int ITER_CNT = 100;
     ans.resize(ITER_CNT);
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
       int useCnt = mapUse[map] + rand() % 151 - 50;
-      int bestMask[51][51];
+      int bestMask[FS][FS];
       //int t1 = timeGetTime();
       CalcBestMask(field, bestMask, useCnt, 0);
       //PrintMask(field, bestMask);
@@ -400,8 +400,8 @@ next:;
         towers[iter][target[iter][i]].level = 0;
         moneys[iter] -= towers[iter][target[iter][i]].Money();
         if (moneys[iter] > best) {
-          pair<int, int> result = Simulator::MapSimulation(mapInfo, 40, towers[iter], mapInfo.levels[0].life);
-          //pair<int, int> result = Simulator::MapSimulation(mapInfo, 40, towers[iter]);
+          pair<int, int> result = Simulator::MapSimulation(false, mapInfo, 0, towers[iter], mapInfo.levels[0].life);
+          //pair<int, int> result = Simulator::MapSimulation(false, mapInfo, 0, towers[iter]);
           //if (result.first >= 10) { break; }
           if (result.first >= mapInfo.levels[0].life) {
             end[iter] = true;
@@ -441,7 +441,7 @@ next:;
     }
     sort(ans.rbegin(), ans.rend());
     field.PutTower(ans[0].second);
-    int mask[51][51];
+    int mask[FS][FS];
     MEMSET(mask, 0);
     //PrintMask(field, mask);
     //ans[0].second = LifeToMoney(mapInfo, map, ans[0].second, ans[0].first);

@@ -13,22 +13,9 @@ int Test(Simulator &simulator, int map) {
     //    fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
 
     vector<TowerInfo> output;
-    if (map < 40) {
-      //output = FirstHalf::RappidPut2(simulator.stages[map], map, level, true);
-      output = FirstHalf::ReplayAttack(simulator.stages[map], map, level);
-    } else {
-      //output = SecondHalf::TronAI(simulator.stages[map], map, level, true);
-      //output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
-      if (map != 0 && map != 40) {
-        output = Final::AI(simulator.stages[map], simulator.stages[map - 1], map, level);
-      } else {
-        output = Final::AI(simulator.stages[map], simulator.stages[map], map, level);
-      }
-    }
-    pair<int, int> nret = simulator.LevelSimulation(map, level, output);
-    //FORIT(it, output) {
-    //  old.push_back(*it);
-    //}
+    output = Final::AI(simulator.stages[map], map, level);
+    //output = SecondHalf::TronAI(simulator.stages[map], map, level, false);
+    pair<int, int> nret = simulator.LevelSimulation(false, map, level, output);
     //printf("Ans %d: Damage:%d Money:%d\n", level + 1, nret.first, nret.second);
     result.first += nret.first;
     result.second += nret.second;
@@ -39,12 +26,14 @@ int Test(Simulator &simulator, int map) {
 
 int main() {
   srand(1234567);
-  Simulator simulator("inputs/input.txt");
+#ifdef WINDOWS
+  timeBeginPeriod(1);
+#endif
 #ifndef CONTEST
+  Simulator simulator("inputs/final.txt");
   int start = timeGetTime();
-  int sum = 520000;
-  FOR(map, 40, 80) {
-    if (map == 40) { sum /= 2; }
+  int sum = 300000;
+  FOR(map, 0, 39) {
     sum += Test(simulator, map);
     printf("TotalMoney: %d\n", sum);
   }
@@ -78,7 +67,7 @@ int main() {
   REP(map, mapCnt) {
     MapInfo mapInfo;
     mapInfo.LoadHeader(stdin);
-    memcpy(simulator.stages[map].field, mapInfo.field, sizeof(int) * 51 * 51);
+    //memcpy(simulator.stages[map].field, mapInfo.field, sizeof(int) * FS * FS);
     REP(level, mapInfo.levelCnt) {
       mapInfo.LoadLevel(stdin);
       //assert(mapInfo.levels[level].life == simulator.stages[map].levels[level].life);
@@ -94,11 +83,7 @@ int main() {
       //pmoney = mapInfo.levels.back().money;
 
       vector<TowerInfo> output;
-      if (map < 40) {
-        output = FirstHalf::ReplayAttack(simulator.stages[map], map, level);
-      } else {
-        output = SecondHalf::ReplayAttack(simulator.stages[map], map, level);
-      }
+      output = Final::AI(mapInfo, map, level);
 
       // Print
       printf("%d\n", (int)output.size());
@@ -106,9 +91,12 @@ int main() {
         printf("%d %d %d %d\n", it->x, it->y, it->level, it->type);
       }
       fflush(stdout);
-      ans = simulator.LevelSimulation(map, level, output);
+      //ans = simulator.LevelSimulation(false, map, level, output);
 
       //fprintf(stderr, "Simulator:%d %d\n", ans.first, ans.second);
     }
   }
+#ifdef WINDOWS
+  timeEndPeriod(1);
+#endif
 }

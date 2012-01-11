@@ -45,7 +45,7 @@ namespace FirstHalf {
     return ret;
   }
 
-  vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level, int mask[51][51]) {
+  vector<TowerInfo> RappidPut(const MapInfo &mapInfo, int stage, int level, int mask[FS][FS]) {
     if (stage <= 1) { return Kimeuchi(stage, level); }
     Field field(mapInfo);
     vector<TowerInfo> tower = mapInfo.levels[level].tower;
@@ -57,8 +57,8 @@ namespace FirstHalf {
 
     int w = field.w;
     int h = field.h;
-    bool visit[51][51];
-    //int mask[51][51];
+    bool visit[FS][FS];
+    //int mask[FS][FS];
     //MEMSET(mask, 0);
     REP(sy, h) {
       REP(sx, w) {
@@ -106,21 +106,21 @@ namespace FirstHalf {
 
 
 
-  int RandomPut(const MapInfo &mapInfo, int map, int mask[51][51]) {
+  int RandomPut(const MapInfo &mapInfo, int map, int mask[FS][FS]) {
     Field field(mapInfo);
     while (true) {
       int x = rand() % field.w;
       int y = rand() % field.h;
       if (!field.OK(mask, x, y)) { continue; }
       mask[y][x] = 15;
-      pair<int, int> result = Simulator::MapSimulation(mapInfo, map, MaskToTower(field, mask, mapInfo.levels[0].money));
+      pair<int, int> result = Simulator::MapSimulation(true, mapInfo, map, MaskToTower(field, mask, mapInfo.levels[0].money));
       if (result.first == 0) { return result.second; }
     }
     assert(false);
     return -150000;
   }
 
-  int SwapPut(const MapInfo &mapInfo, int map, int mask[51][51]) {
+  int SwapPut(const MapInfo &mapInfo, int map, int mask[FS][FS]) {
     Field field(mapInfo);
     Simulator simulator;
     simulator.stages.push_back(mapInfo);
@@ -147,21 +147,21 @@ namespace FirstHalf {
     if ((int)towers.size() == 0) { return SwapPut(mapInfo, map, mask); }
     int best = -1500000;
     {
-      pair<int, int> result = simulator.MapSimulation(mapInfo, 0, towers);
+      pair<int, int> result = simulator.MapSimulation(true, mapInfo, 0, towers);
       result.second += -result.first * 5000;
       best = result.second;
     }
 
     int pmoney = best;
-    int sums[51][51];
+    int sums[FS][FS];
     field.CalcSum(mask, sums);
 
     vector<TowerInfo> bestTowers = towers;
     REP(iter, 10000) {
       if (towers.size() == 0) { break; }
       vector<TowerInfo> ptowers = towers;
-      int pmask[51][51];
-      memcpy(pmask, mask, sizeof(int) * 51 * 51);
+      int pmask[FS][FS];
+      memcpy(pmask, mask, sizeof(int) * FS * FS);
       int r = rand() % 10;
       int money = -15000000;
       if (r <= 8) {
@@ -188,7 +188,7 @@ namespace FirstHalf {
         }
         assert(field.OK2(mask));
       }
-      pair<int, int> result = simulator.MapSimulation(mapInfo, map, MaskToTower(field, mask, mapInfo.levels[0].money), 1);
+      pair<int, int> result = simulator.MapSimulation(true, mapInfo, map, MaskToTower(field, mask, mapInfo.levels[0].money), 1);
       result.second += -result.first * 5000;
       money = result.second;
       if (money > best) {
@@ -198,7 +198,7 @@ namespace FirstHalf {
       if (money > pmoney || rand() % 300 > iter * 3 + 150) {
         pmoney = money;
       } else {
-        memcpy(mask, pmask, sizeof(int) * 51 * 51);
+        memcpy(mask, pmask, sizeof(int) * FS * FS);
         towers = ptowers;
       }
     }
@@ -206,8 +206,8 @@ namespace FirstHalf {
     return best;
   }
 
-  void Tsubusu(const MapInfo &mapInfo, int mask[51][51]) {
-    memset(mask, 0, sizeof(int) * 51 * 51);
+  void Tsubusu(const MapInfo &mapInfo, int mask[FS][FS]) {
+    memset(mask, 0, sizeof(int) * FS * FS);
     Field field(mapInfo);
     int cnt = rand() % field.gs.size();
     if (rand() % 2) { cnt = 0; }
@@ -233,10 +233,10 @@ namespace FirstHalf {
     const int ITER_CNT = 12;
     vector<pair<int, vector<TowerInfo> > > ans(ITER_CNT, make_pair(best, vector<TowerInfo>()));
     {
-      int mask[51][51];
-      memset(mask, 0, sizeof(int) * 51 * 51);
+      int mask[FS][FS];
+      memset(mask, 0, sizeof(int) * FS * FS);
       vector<TowerInfo> towers = RappidPut(mapInfo, stage, level, mask);
-      pair<int, int> result = Simulator::MapSimulation(mapInfo, stage, towers);
+      pair<int, int> result = Simulator::MapSimulation(true, mapInfo, stage, towers);
       //printf("-1 %d %d\n", result.first, result.second);
       result.second += -result.first * 400;
       ans.push_back(make_pair(result.second, towers));
@@ -244,7 +244,7 @@ namespace FirstHalf {
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
       Field field(mapInfo);
-      int mask[51][51];
+      int mask[FS][FS];
       MEMSET(mask, 0);
       //Tsubusu(mapInfo, mask);
       int money = SwapPut(mapInfo, stage, mask);
@@ -264,7 +264,7 @@ namespace FirstHalf {
     return ans[0].second;
   }
 
-  bool OKMask(const MapInfo &mapInfo, int mask[51][51]) {
+  bool OKMask(const MapInfo &mapInfo, int mask[FS][FS]) {
     Field field(mapInfo);
     if (field.OK2(mask)) { return true; }
     const int dx[8] = { 1, 0, -1, 0, 1, 1, -1, -1 };
@@ -272,7 +272,7 @@ namespace FirstHalf {
     REP(sy, field.h) {
       REP(sx, field.w) {
         if (mask[sy][sx] == 0 || field.field[sy][sx] == '0') { continue; }
-        bool visit[51][51];
+        bool visit[FS][FS];
         MEMSET(visit, false);
         int v = mask[sy][sx];
         mask[sy][sx] = 0;
@@ -314,10 +314,10 @@ namespace FirstHalf {
     vector<pair<int, vector<TowerInfo> > > ans(upper);
     REP(i, upper) { ans[i].first = -150000; }
     {
-      int mask[51][51];
-      memset(mask, 0, sizeof(int) * 51 * 51);
+      int mask[FS][FS];
+      memset(mask, 0, sizeof(int) * FS * FS);
       vector<TowerInfo> towers = RappidPut(mapInfo, map, level, mask);
-      pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers, 1);
+      pair<int, int> result = Simulator::MapSimulation(true, mapInfo, map, towers, 1);
       result.second += -result.first * 500;
       ans.push_back(make_pair(result.second, towers));
       best = result.second;
@@ -328,7 +328,7 @@ namespace FirstHalf {
       MaskInfo temp = answer[i];
       if (!OKMask(mapInfo, temp.mask)) { continue; }
       vector<TowerInfo> towers = MaskToTower(field, answer[i].mask, mapInfo.levels[0].money);
-      pair<int, int> result = Simulator::MapSimulation(mapInfo, map, towers);
+      pair<int, int> result = Simulator::MapSimulation(true, mapInfo, map, towers);
       result.second += -result.first * 5000;
       best = max(best, result.second);
       ans[i] = make_pair(result.second, towers);

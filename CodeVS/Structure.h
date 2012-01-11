@@ -89,7 +89,7 @@ struct LevelInfo {
 
 struct MapInfo {
   int w, h;
-  int field[51][51];
+  int field[FS][FS];
   int levelCnt;
   vector<LevelInfo> levels;
   MapInfo() {;}
@@ -97,14 +97,14 @@ struct MapInfo {
   MapInfo(const MapInfo &rhs) {
     w = rhs.w;
     h = rhs.h;
-    memcpy(field, rhs.field, sizeof(int) * 51 * 51);
+    memcpy(field, rhs.field, sizeof(int) * FS * FS);
     levelCnt = rhs.levelCnt;
     levels = rhs.levels;
   }
   MapInfo &operator=(const MapInfo &rhs) {
     w = rhs.w;
     h = rhs.h;
-    memcpy(field, rhs.field, sizeof(int) * 51 * 51);
+    memcpy(field, rhs.field, sizeof(int) * FS * FS);
     levelCnt = rhs.levelCnt;
     levels = rhs.levels;
     return *this;

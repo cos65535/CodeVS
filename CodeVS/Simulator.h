@@ -72,17 +72,12 @@ struct Simulator {
   //  stages[map].Print();
   //}
 
-  static pair<int, int> MapSimulation(const MapInfo &mapInfo, int stage, const vector<TowerInfo> &towers, int damage = 10) {
+  static pair<int, int> MapSimulation(bool earn, const MapInfo &mapInfo, int stage, const vector<TowerInfo> &towers, int damage = 10) {
     damage = min(damage, 10);
     Simulator simulator;
-    if (stage >= 40) {
-      simulator.stages.resize(40);
-      stage = 40;
-    } else {
-      stage = 0;
-    }
+    stage = 0;
     simulator.stages.push_back(mapInfo);
-    return simulator.MapSimulation(stage, towers);
+    return simulator.MapSimulation(earn, stage, towers);
   }
   //static pair<int, int> LevelSimulation(const MapInfo &mapInfo, int stage, int level, const vector<TowerInfo> &towers) {
   //  Simulator simulator;
@@ -97,16 +92,16 @@ struct Simulator {
   //}
 
   //1マップのシミューレーション
-  pair<int, int> MapSimulation(int stage, const vector<TowerInfo> &towers, int damage = 10) {
+  pair<int, int> MapSimulation(bool earn, int stage, const vector<TowerInfo> &towers, int damage = 10) {
     damage = min(damage, 10);
     vector<TowerInfo> nothing;
     pair<int, int> ret(0, 0);
     REP(i, stages[stage].levels.size()) {
       pair<int, int> nret;
       if (i == 0) {
-        nret = LevelSimulation(stage, i, towers, damage - nret.first);
+        nret = LevelSimulation(earn, stage, i, towers, damage - nret.first);
       } else {
-        nret = LevelSimulation(stage, i, nothing, damage - nret.first);
+        nret = LevelSimulation(earn, stage, i, nothing, damage - nret.first);
       }
       ret.first += nret.first;
       ret.second += nret.second;
@@ -119,7 +114,7 @@ struct Simulator {
   }
 
   //1レベルのシミュレーション
-  pair<int, int> LevelSimulation(int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
+  pair<int, int> LevelSimulation(bool earn, int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
     damage = min(damage, 10);
     //int start = timeGetTime();
     pair<int, int> ret(0, 0);
@@ -137,6 +132,15 @@ struct Simulator {
       }
       ret.second -= nret;
     }
+    //REP(y, field.h) {
+    //  REP(x, field.w) {
+    //    if (field.move[y][x] >= 9) { printf("#"); }
+    //    else {
+    //      printf("%d", field.move[y][x]);
+    //    }
+    //  }
+    //    puts("");
+    //}
 
     vector<EnemyInfo> enemyInfos = stages[stage].levels[level].enemy;
     stable_sort(enemyInfos.begin(), enemyInfos.end());
@@ -214,7 +218,7 @@ next:;
       FORIT(it1, enemys) {
         if (!it1->alive) { continue; }
         if (it1->life <= 0) {
-          if (stage < 40) {
+          if (earn) {
             int money = (it1->info.life - (frame - it1->info.t)) / 10;
             ret.second += money;
           }
