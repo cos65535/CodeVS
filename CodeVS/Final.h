@@ -172,7 +172,7 @@ next:;
   }
 
   vector<MaskInfo> CalcBestMask(const Field &field, int useCnt) {
-    ll bestDist = -1;
+    //ll bestDist = -1;
     int ITER_CNT = 720;
     vector<MaskInfo> maskInfo(ITER_CNT);
     REP(iter, ITER_CNT) {
@@ -320,7 +320,7 @@ next:;
         ans = simulator.LevelSimulation(false, 0, level, tower, 1);
       } else {
         if (hi - lo < 2) { break; }
-        ans = simulator.LevelSimulationAproximate(false, 0, level, tower, 1);
+        ans = simulator.ApproximateLevelSimulation(false, 0, level, tower, 1);
       }
       ans.second += -ans.first * 50000;
       //cout << mid << " " << ans.first << " " << ans.second << endl;
@@ -367,7 +367,7 @@ next:;
     }
 
     vector<pair<int, vector<TowerInfo> > > ans;
-    int best = -1500000;
+    //int best = -1500000;
     const int ITER_CNT = 5;
     ans.resize(ITER_CNT);
     int bestMask[FS][FS];
@@ -393,7 +393,7 @@ next:;
       expandT += t4 - t3;
       simulatorT += t6 - t5;
     }
-    fprintf(stdout, "%d %d %d \n", t2 - t1, expandT, simulatorT);
+    //fprintf(stdout, "%d %d %d \n", t2 - t1, expandT, simulatorT);
     calcCandidate = false;
     sort(maskInfos.rbegin(), maskInfos.rend());
     memcpy(bestMask, maskInfos[0].mask, sizeof(int) * FS * FS);

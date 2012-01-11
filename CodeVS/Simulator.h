@@ -272,7 +272,7 @@ end:
 
 
     //厳密ではない1レベルのシミュレーション
-    pair<int, int> LevelSimulationAproximate(bool earn, int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
+    pair<int, int> ApproximateLevelSimulation(bool earn, int stage, int level, const vector<TowerInfo> &towerInfos, int damage = 10) {
     damage = min(damage, 10);
     //int start = timeGetTime();
     pair<int, int> ret(0, 0);

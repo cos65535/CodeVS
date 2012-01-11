@@ -13,8 +13,8 @@ int Test(Simulator &simulator, int map) {
     //    fprintf(stderr, "Stage:%d-%d\n", map + 1, level + 1);
 
     vector<TowerInfo> output;
-    output = Final::AI(simulator.stages[map], map, level);
-    //output = SecondHalf::TronAI(simulator.stages[map], map, level, false);
+    //output = Final::AI(simulator.stages[map], map, level);
+    output = SecondHalf::TronAI(simulator.stages[map], map, level, false);
     pair<int, int> nret = simulator.LevelSimulation(false, map, level, output);
     //printf("Ans %d: Damage:%d Money:%d\n", level + 1, nret.first, nret.second);
     result.first += nret.first;

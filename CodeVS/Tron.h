@@ -306,7 +306,7 @@ end:
     Field field(mapInfo.field, mapInfo.w, mapInfo.h);
     int best = -1500000;
     vector<pair<int, vector<TowerInfo> > > ans;
-    const int ITER_CNT = 100;
+    const int ITER_CNT = 40;
     ans.resize(ITER_CNT);
 #pragma omp parallel for
     REP(iter, ITER_CNT) {
