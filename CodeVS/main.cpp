@@ -33,7 +33,7 @@ int main() {
   Simulator simulator("inputs/final.txt");
   int start = timeGetTime();
   int sum = 300000;
-  FOR(map, 0, 39) {
+  FOR(map, 0, 38) {
     sum += Test(simulator, map);
     printf("TotalMoney: %d\n", sum);
   }

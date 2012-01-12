@@ -171,9 +171,10 @@ next:;
     return dist;
   }
 
-  vector<MaskInfo> CalcBestMask(const Field &field, int useCnt) {
+  vector<MaskInfo> CalcBestMask(const Field &field, int map, int useCnt) {
     //ll bestDist = -1;
-    int ITER_CNT = 720;
+    int ITER_CNT = map < 25 ? 720 : 2000;
+    if (field.w * field.h <= 18 * 18) { ITER_CNT *= 2; }
     vector<MaskInfo> maskInfo(ITER_CNT);
     REP(iter, ITER_CNT) {
       MEMSET(maskInfo[iter].mask, 0);
@@ -317,10 +318,10 @@ next:;
       vector<TowerInfo> tower = MaskToTower(field, lmask, 1 << 20);
       pair<int, int> ans;
       if (strict) {
-        ans = simulator.LevelSimulation(false, 0, level, tower, 1);
+        ans = simulator.LevelSimulation(false, 0, level, tower, 10);
       } else {
         if (hi - lo < 2) { break; }
-        ans = simulator.ApproximateLevelSimulation(false, 0, level, tower, 1);
+        ans = simulator.ApproximateLevelSimulation(false, 0, level, tower, 10);
       }
       ans.second += -ans.first * 50000;
       //cout << mid << " " << ans.first << " " << ans.second << endl;
@@ -343,10 +344,15 @@ next:;
   vector<TowerInfo> AI(const MapInfo &mapInfo, const int map, const int level, bool special);
   vector<TowerInfo> SpecialCaseCheck(const MapInfo &mapInfo, const int map, const int level, const vector<TowerInfo> &towers) {
     int life = mapInfo.levels[level].life;
+    int damage = 10;
     {
       Simulator simulator;
       simulator.stages.push_back(mapInfo);
-      if (mapInfo.levels[level].money - CalcMoney(towers) < 3000 || simulator.LevelSimulation(false, 0, level, towers, life).first < life) { return towers; }
+      int tlife = life;
+      if (level < 18) { tlife = min(life, 1); }
+      if (level < 22) { tlife = min(life, 2); }
+      damage = simulator.LevelSimulation(false, 0, level, towers, 10).first;
+      if (mapInfo.levels[level].money - CalcMoney(towers) < 5000 || damage < tlife) { return towers; }
     }
     MapInfo levelMap(mapInfo);
     levelMap.levels[0] = levelMap.levels[level];
@@ -358,9 +364,15 @@ next:;
     vector<TowerInfo> ret = towers;
     ll start = timeGetTime();
     while (true) {
-      if (timeGetTime() - start > 20 * 1000) { break; }
+      if (timeGetTime() - start > 23 * 1000) { calcCandidate = false; break; }
       vector<TowerInfo> nret = AI(levelMap, map, 0, true);
-      if (simulator.LevelSimulation(false, 0, 0, nret, life).first < life) {
+      int tlife = life;
+      FOR(i, 1, 10) {
+        if (timeGetTime() - start < i * 2 * 1000) { tlife = i; break; }
+      }
+      tlife = min(tlife, life);
+      if (tlife > damage) { calcCandidate = false; break; }
+      if (simulator.LevelSimulation(false, 0, 0, nret, tlife).first < tlife) {
         //cout << "test" << " " << level << " " << life << " " << simulator.LevelSimulation(false, 0, 0, nret, life).first << endl;
         ret.clear();
         vector<TowerInfo> old = mapInfo.levels[level].tower;
@@ -382,7 +394,7 @@ next:;
             ret.push_back(nret[right]);
             right++;
           } else {
-            if (old[left].type != nret[right].type || old[left].level == nret[right].level) {
+            if (old[left].type != nret[right].type || old[left].level < nret[right].level) {
               ret.push_back(nret[right]);
             }
             left++; right++;
@@ -409,7 +421,7 @@ next:;
 
     MapInfo mousou(mapInfo);
     mousou.levels[0].enemy.clear();
-    if (!special) {
+    //if (!special) {
       int cnt = (int)(sqrt((double)(map + 1) * 25) * 2 + 11);
       REP(i, cnt) {
         EnemyInfo enemy;
@@ -421,19 +433,20 @@ next:;
         enemy.t = rand() % 30 + 1;
         mousou.levels[0].enemy.push_back(enemy);
       }
-    } else {
-      mousou.levels[0].enemy = mapInfo.levels[0].enemy;
-    }
+    //} else {
+    //  mousou.levels[0].enemy = mapInfo.levels[0].enemy;
+    //}
 
     vector<pair<int, vector<TowerInfo> > > ans;
     //int best = -1500000;
-    const int ITER_CNT = 5;
+    int ITER_CNT = map < 25 ? 5 : 10;
+    if (field.w * field.h <= 18 * 18) { ITER_CNT *= 2; }
     ans.resize(ITER_CNT);
     int bestMask[FS][FS];
     int expandT = 0;
     int simulatorT = 0;
     //int t1 = timeGetTime();
-    vector<MaskInfo> maskInfos = CalcBestMask(field, 150);
+    vector<MaskInfo> maskInfos = CalcBestMask(field, map, 150);
     //int t2 = timeGetTime();
     maskInfos.resize(ITER_CNT);
     REP(iter, ITER_CNT) {

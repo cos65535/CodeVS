@@ -11,6 +11,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <time.h>
 #include <vector>
 #include <queue>
 #include <string>
