@@ -74,8 +74,14 @@ struct Field {
     int PutTower(const vector<TowerInfo> &tower) {
       int ret = 0;
       FORIT(it, tower) {
-        assert(0 <= it->type && it->type <= 2);
+        assert(0 <= it->type && it->type <= 3);
         if (field[it->y][it->x] == 's' || field[it->y][it->x] == 'g' || field[it->y][it->x] == '1') { return -1; }
+        if (it->type == 3) {
+          //cout << it->x << " " << it->y << " " << field[it->y][it->x] << endl;
+          assert(field[it->y][it->x] >= 1100);
+          field[it->y][it->x] = '0';
+          continue;
+        }
         ret += it->Money();
         int ptype = field[it->y][it->x] / 1000 - 1;
         int plevel = field[it->y][it->x] % 1000 / 100 - 1;

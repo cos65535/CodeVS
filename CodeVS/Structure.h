@@ -14,7 +14,10 @@ struct TowerInfo {
     int mo[3] = { 10, 15, 20 };
     return mo[type] * (level + 1) * (level + 2) / 2;
   }
-  bool operator<(const TowerInfo &rhs) const { return false; }
+  bool operator<(const TowerInfo &rhs) const {
+    if (x != rhs.x) { return x < rhs.x; }
+    return y < rhs.y;
+  }
   bool operator==(const TowerInfo &rhs) const {
     return x == rhs.x && y == rhs.y && level == rhs.level && type == rhs.type;
   }

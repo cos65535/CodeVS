@@ -3,6 +3,7 @@
 #include "Base.h"
 #include "Field.h"
 #include "Structure.h"
+#include "Mask.h"
 
 struct Simulator {
   struct Tower {
@@ -254,11 +255,10 @@ end:
     if ((int)stages.size() > nstage && (int)stages[nstage].levels.size() > nlevel) {
       if (nlevel != 0) {
         stages[nstage].levels[nlevel].tower.clear();
-        FORIT(it, stages[stage].levels[level].tower) {
-          stages[nstage].levels[nlevel].tower.push_back(*it);
-        }
-        FORIT(it, towerInfos) {
-          stages[nstage].levels[nlevel].tower.push_back(*it);
+        FORIT(it, towers) {
+          assert(0 <= it->type && it->type <= 2);
+          stages[nstage].levels[nlevel].tower.push_back(
+              TowerInfo(it->x, it->y, it->level, it->type));
         }
       }
       stages[nstage].levels[nlevel].life = stages[stage].levels[level].life - ret.first;
@@ -405,11 +405,10 @@ end:
     if ((int)stages.size() > nstage && (int)stages[nstage].levels.size() > nlevel) {
       if (nlevel != 0) {
         stages[nstage].levels[nlevel].tower.clear();
-        FORIT(it, stages[stage].levels[level].tower) {
-          stages[nstage].levels[nlevel].tower.push_back(*it);
-        }
-        FORIT(it, towerInfos) {
-          stages[nstage].levels[nlevel].tower.push_back(*it);
+        FORIT(it, towers) {
+          assert(0 <= it->type && it->type <= 2);
+          stages[nstage].levels[nlevel].tower.push_back(
+              TowerInfo(it->x, it->y, it->level, it->type));
         }
       }
       stages[nstage].levels[nlevel].life = stages[stage].levels[level].life - ret.first;

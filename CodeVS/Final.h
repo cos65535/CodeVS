@@ -340,19 +340,76 @@ next:;
     return ret;
   }
 
-  vector<TowerInfo> AI(const MapInfo &mapInfo, const int map, const int level) {
+  vector<TowerInfo> AI(const MapInfo &mapInfo, const int map, const int level, bool special);
+  vector<TowerInfo> SpecialCaseCheck(const MapInfo &mapInfo, const int map, const int level, const vector<TowerInfo> &towers) {
+    int life = mapInfo.levels[level].life;
+    {
+      Simulator simulator;
+      simulator.stages.push_back(mapInfo);
+      if (mapInfo.levels[level].money - CalcMoney(towers) < 3000 || simulator.LevelSimulation(false, 0, level, towers, life).first < life) { return towers; }
+    }
+    MapInfo levelMap(mapInfo);
+    levelMap.levels[0] = levelMap.levels[level];
+    levelMap.levels[0].tower.clear();
+    levelMap.levels.resize(1);
+
+    Simulator simulator;
+    simulator.stages.push_back(levelMap);
+    vector<TowerInfo> ret = towers;
+    ll start = timeGetTime();
+    while (true) {
+      if (timeGetTime() - start > 20 * 1000) { break; }
+      vector<TowerInfo> nret = AI(levelMap, map, 0, true);
+      if (simulator.LevelSimulation(false, 0, 0, nret, life).first < life) {
+        //cout << "test" << " " << level << " " << life << " " << simulator.LevelSimulation(false, 0, 0, nret, life).first << endl;
+        ret.clear();
+        vector<TowerInfo> old = mapInfo.levels[level].tower;
+        sort(old.begin(), old.end());
+        sort(nret.begin(), nret.end());
+        int left = 0;
+        int right = 0;
+        while (left < (int)old.size() || right < (int)nret.size()) {
+          if (left == (int)old.size()) {
+            ret.push_back(nret[right]);
+            right++;
+          } else if (right == (int)nret.size()) {
+            ret.push_back(TowerInfo(old[left].x, old[left].y, 0, 3));
+            left++;
+          } else if (old[left] < nret[right]) {
+            ret.push_back(TowerInfo(old[left].x, old[left].y, 0, 3));
+            left++;
+          } else if (nret[right] < old[left]) {
+            ret.push_back(nret[right]);
+            right++;
+          } else {
+            if (old[left].type != nret[right].type || old[left].level == nret[right].level) {
+              ret.push_back(nret[right]);
+            }
+            left++; right++;
+          }
+        }
+        break;
+      }
+      //cout << life << " " << simulator.LevelSimulation(false, 0, 0, nret, life).first << endl;
+    }
+    return ret;
+  }
+
+  vector<TowerInfo> AI(const MapInfo &mapInfo, const int map, const int level, bool special = false) {
     Field field(mapInfo);
     field.PutTower(mapInfo.levels[level].tower);
     if (level != 0) {
       int mask[FS][FS];
       MEMSET(mask, 0);
       Simulation(mapInfo, map, level, mask, true);
-      return MaskToTower(field, mask, mapInfo.levels[level].money);
+      vector<TowerInfo> towers = MaskToTower(field, mask, mapInfo.levels[level].money);
+      if (!special) { towers = SpecialCaseCheck(mapInfo, map, level, towers); }
+      return towers;
     }
 
     MapInfo mousou(mapInfo);
     mousou.levels[0].enemy.clear();
-    {
+    if (!special) {
       int cnt = (int)(sqrt((double)(map + 1) * 25) * 2 + 11);
       REP(i, cnt) {
         EnemyInfo enemy;
@@ -364,6 +421,8 @@ next:;
         enemy.t = rand() % 30 + 1;
         mousou.levels[0].enemy.push_back(enemy);
       }
+    } else {
+      mousou.levels[0].enemy = mapInfo.levels[0].enemy;
     }
 
     vector<pair<int, vector<TowerInfo> > > ans;
@@ -373,9 +432,9 @@ next:;
     int bestMask[FS][FS];
     int expandT = 0;
     int simulatorT = 0;
-    int t1 = timeGetTime();
+    //int t1 = timeGetTime();
     vector<MaskInfo> maskInfos = CalcBestMask(field, 150);
-    int t2 = timeGetTime();
+    //int t2 = timeGetTime();
     maskInfos.resize(ITER_CNT);
     REP(iter, ITER_CNT) {
       calcCandidate = false;
@@ -388,7 +447,7 @@ next:;
         SetFrozenTower(field, maskInfos[iter].mask, 10);
       }
       int t5 = timeGetTime();
-      maskInfos[iter].money = Simulation(mousou, map, 0, maskInfos[iter].mask, false);
+      maskInfos[iter].money = Simulation(mousou, map, 0, maskInfos[iter].mask, special);
       int t6 = timeGetTime();
       expandT += t4 - t3;
       simulatorT += t6 - t5;
@@ -398,10 +457,11 @@ next:;
     sort(maskInfos.rbegin(), maskInfos.rend());
     memcpy(bestMask, maskInfos[0].mask, sizeof(int) * FS * FS);
     Simulation(mapInfo, map, level, bestMask, true);
-    //PrintMask(field, bestMask);
     //int t7 = timeGetTime();
     //PrintMask(field, bestMask);
 
-    return MaskToTower(field, bestMask, mapInfo.levels[level].money);
+    vector<TowerInfo> towers = MaskToTower(field, bestMask, mapInfo.levels[level].money);
+    if (!special) { towers = SpecialCaseCheck(mapInfo, map, level, towers); }
+    return towers;
   }
 };
