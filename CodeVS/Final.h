@@ -364,11 +364,11 @@ next:;
     vector<TowerInfo> ret = towers;
     ll start = timeGetTime();
     while (true) {
-      if (timeGetTime() - start > 23 * 1000) { calcCandidate = false; break; }
+      if (timeGetTime() - start > 4 * 1000) { calcCandidate = false; break; }
       vector<TowerInfo> nret = AI(levelMap, map, 0, true);
       int tlife = life;
       FOR(i, 1, 10) {
-        if (timeGetTime() - start < i * 2 * 1000) { tlife = i; break; }
+        if (timeGetTime() - start < i * 0.4 * 1000) { tlife = i; break; }
       }
       tlife = min(tlife, life);
       if (tlife > damage) { calcCandidate = false; break; }
