@@ -457,7 +457,7 @@ next:;
       int t4 = timeGetTime();
       //EraseUneedTower(field, bestMask);
       if (map > 10) {
-        SetFrozenTower(field, maskInfos[iter].mask, 10);
+        SetFrozenTower(field, maskInfos[iter].mask, 11);
       }
       int t5 = timeGetTime();
       maskInfos[iter].money = Simulation(mousou, map, 0, maskInfos[iter].mask, special);
