@@ -147,7 +147,6 @@ next:;
     //  //PrintMask(field, pattern[i]);f
     //}
 
-    //EraseUneedTower(field, mask);
     //PrintMask(field, bestMask);
     //ExpandMask(field, mask, useCnt);
     dist = field.CalcDist(mask);
@@ -455,7 +454,6 @@ next:;
       int t3 = timeGetTime();
       ExpandMask(field, maskInfos[iter].mask, 150);
       int t4 = timeGetTime();
-      //EraseUneedTower(field, bestMask);
       if (map > 10) {
         SetFrozenTower(field, maskInfos[iter].mask, 11);
       }

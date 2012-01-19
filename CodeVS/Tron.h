@@ -23,7 +23,7 @@ namespace SecondHalf {
   }
 
 
-  int EraseUneedTower(const Field &field, int bestMask[FS][FS]) {
+  int EraseUnneededTower(const Field &field, int bestMask[FS][FS]) {
     int cnt = 0;
     int bestDist = field.CalcDist(bestMask);
     REP(y, field.h) {
@@ -148,7 +148,7 @@ namespace SecondHalf {
 next:;
     }
 
-    //EraseUneedTower(field, mask);
+    //EraseUnneededTower(field, mask);
     //PrintMask(field, bestMask);
     //ExpandMask(field, mask, useCnt);
     dist = field.CalcDist(mask);
@@ -316,13 +316,13 @@ end:
       CalcBestMask(field, bestMask, useCnt, 0);
       //PrintMask(field, bestMask);
       //int t2 = timeGetTime();
-      EraseUneedTower(field, bestMask);
+      EraseUnneededTower(field, bestMask);
       //PrintMask(field, bestMask);
       //int t3 = timeGetTime();
       ExpandMask(field, bestMask, useCnt);
       //PrintMask(field, bestMask);
       //int t4 = timeGetTime();
-      EraseUneedTower(field, bestMask);
+      EraseUnneededTower(field, bestMask);
       //PrintMask(field, bestMask);
       //int t5 = timeGetTime();
       SetFrozenTower(field, bestMask, (iter & 1) * (10 + rand() % 5));
